@@ -9,6 +9,33 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 PATH_DATA = "./Data"
 TIMEOUT = 10  # seconds
 
+URL = {
+    "base_url": "https://www.puzzle-binairo.com/",
+    "specific_url": "",
+    "size_url": {
+        6: {
+            "easy": "binairo-6x6-easy/",
+            "hard": "binairo-6x6-hard/",
+        },
+        8: {
+            "easy": "binairo-8x8-easy/",
+            "hard": "binairo-8x8-hard/",
+        },
+        10: {
+            "easy": "binairo-10x10-easy/",
+            "hard": "binairo-10x10-hard/",
+        },
+        14: {
+            "easy": "binairo-14x14-easy/",
+            "hard": "binairo-14x14-hard/",
+        },
+        20: {
+            "easy": "binairo-20x20-easy/",
+            "hard": "binairo-20x20-hard/",
+        },
+    },
+}
+
 
 class WebInteractor:
     def __init__(self, url, credentials=None):
@@ -18,15 +45,27 @@ class WebInteractor:
         self.credentials = credentials
         # Accept and close privacy preference window
         # self._wait(By.XPATH, "/html/body/div[1]/div/div/div/div[2]/div/button[2]", TIMEOUT).click()
+    
+    # Driver setup for Chrome 
+    # def _driver_setup(self):
+    #     service = Service()
+    #     options = webdriver.ChromeOptions()
+    #     options.add_experimental_option("detach", True)
+    #     driver = webdriver.Chrome(service=service, options=options)
+    #     return driver
 
-
-
+    # Driver setup for Microsoft Edge
     def _driver_setup(self):
-        service = Service()
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("detach", True)
-        driver = webdriver.Chrome(service=service, options=options)
+        from selenium.webdriver.edge.service import Service as EdgeService
+        from selenium.webdriver.edge.options import Options as EdgeOptions
+
+        options = EdgeOptions()
+        options.add_experimental_option("detach", True)  # supaya browser gak langsung nutup
+        service = EdgeService()  # biarkan default, selenium otomatis cari msedgedriver
+
+        driver = webdriver.Edge(service=service, options=options)
         return driver
+
 
     def _login(self, credentials):
         # Open login menu
@@ -172,6 +211,10 @@ class WebInteractor:
                 strings += column + " "
             data.append(f"{strings}\n")
         path = f"{PATH_DATA}/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
+        
+        # Ensure the folder is there
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
         file = open(path, "x")
         file.writelines(data)
         file.close()
