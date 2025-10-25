@@ -254,6 +254,7 @@ class WebInteractor:
             f"{id}\n",
             f"{size} {difficulty if difficulty is not None else ''}\n"
         ]
+        
         for row in board:
             strings = ""
             for column in row:
