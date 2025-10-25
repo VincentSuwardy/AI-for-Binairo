@@ -2,6 +2,10 @@ import random
 from WebIterator import WebInteractor, URL
 from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
 
+# DEFINE PUZZLE CONFIG
+PUZZLE_SIZE = "10"       # size: 6 | 8 | 10 | 14 | 20
+PUZZLE_DIFF = "easy"    # diff: easy | hard
+
 '''
     Represent the final solved answer of a puzzle.
     Constains an internal State class that stores the current board configuration as a 2D list of integers.
@@ -20,18 +24,19 @@ class Answer:
     Steps:
         1. Initialize the web iterator.
         2. Retrieve a puzzle from the web.
-        3. Apply constraint-based solving rules.
-        4. TODO: Apply genetic algorithm based on selected reference(s).
-        5. Save both the puzzle and its solution locally.
-        6. Input the solution back into the website.
+        3. Apply constraint-based rules solving rules.
+        4. TODO: Apply all constraint pattern.
+        5. TODO: Apply genetic algorithm based on selected reference(s).
+        6. Save both the puzzle and its solution locally.
+        7. Input the solution back into the website.
 '''
 def main():
     # initialize the web iterator
     iterator = WebInteractor(URL)
 
     # define puzzle config
-    size = "14"         # size: 6, 8, 10, 14, 20
-    difficulty = "easy" # diff: easy, hard
+    size = PUZZLE_SIZE
+    difficulty = PUZZLE_DIFF
 
     # retrieve puzzle from the web
     id, board = iterator.open_puzzle(size, difficulty)

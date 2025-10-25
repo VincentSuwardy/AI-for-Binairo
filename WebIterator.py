@@ -60,11 +60,22 @@ class WebInteractor:
     def _driver_setup(self):
         from selenium.webdriver.edge.service import Service as EdgeService
         from selenium.webdriver.edge.options import Options as EdgeOptions
+        from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
         options = EdgeOptions()
-        options.add_experimental_option("detach", True)  # supaya browser gak langsung nutup
-        service = EdgeService()  # biarkan default, selenium otomatis cari msedgedriver
+        options.add_experimental_option("detach", True)  # make browser not auto close
 
+        # Hide log debug/error from browser
+        options.add_argument("--log-level=3")  # only fatal error will appear
+        options.add_argument("--disable-logging")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        # options.add_argument("--headless")  # optional: browser not showing
+
+        # Deactive logging internal from Edge
+        caps = DesiredCapabilities.EDGE
+        caps['goog:loggingPrefs'] = {'browser': 'OFF', 'driver': 'OFF', 'performance': 'OFF'}
+
+        service = EdgeService()  # set default, selenium will automatically search msedgedriver
         driver = webdriver.Edge(service=service, options=options)
         return driver
 
@@ -243,9 +254,10 @@ class WebInteractor:
             f"{id}\n",
             f"{size} {difficulty if difficulty is not None else ''}\n"
         ]
-        strings = ""
         for row in board:
-            strings += "".join(str(column) for column in row) + " "
+            strings = ""
+            for column in row:
+                strings += str(column) + " "
             data.append(f"{strings}\n")
 
         path = f"./Answer/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
@@ -275,7 +287,7 @@ class WebInteractor:
     '''
         Input the solved puzzle answer into the web interface.
         The rules for clicking:
-        - 1 (BALCK): single right-click
+        - 1 (BLACK): single right-click
         - 0 (WHITE): double right-click
         - -1 (EMPTY): do nothing
         *Cells with class "task-cell" (predefined) are never clicked
@@ -287,15 +299,16 @@ class WebInteractor:
         # get all board cells (including regular and task-cells)
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .task-cell")
 
+        # cells = [c for c in self._driver.find_elements(By.CSS_SELECTOR, ".cell") if "task-cell" not in c.get_attribute("class")]
+
         flat_answer = [val for row in answer.state.board for val in row]
     
         # debug print
-        print(f"[INFO] Total board cells: {len(flat_answer)}")
-        print(f"[INFO] Total DOM cells: {len(cells)}")
+        # print(f"[INFO] Total board cells: {len(flat_answer)}")
+        # print(f"[INFO] Total DOM cells: {len(cells)}")
     
         # iterate through each cell and its corresponding board value
         for idx, (cell, val) in enumerate(zip(cells, flat_answer)):
-            # val = str(val)
             cell_class = cell.get_attribute("class")
             
             # skip if predefined task-cell
