@@ -1,10 +1,12 @@
 import os
+import time
 # import numpy as np
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.common.action_chains import ActionChains
 
 PATH_DATA = "./Data"
 TIMEOUT = 10  # seconds
@@ -126,6 +128,7 @@ class WebInteractor:
 
         # Open puzzle #
         url = self.URL["base_url"]
+
         # Specific puzzles larger than 20 in size
         if size.isnumeric() and id:
             url += self.URL["specific_url"]
@@ -162,41 +165,60 @@ class WebInteractor:
         # Get borders #
         # vertical_lines: 2-dimensional array[size][size - 1], flattened into bitstring. Holds information about the presence of a right border in a cell (except the last cell of every row).
         # horizontal_lines: 2-dimensional array[size - 1][size], flattened into bitstring. Holds information about the presence of a bottom border in a cell (except every cell in the last row).
-        self._wait(By.CLASS_NAME, "cell", TIMEOUT)
-        cells = self._driver.find_element(By.CLASS_NAME, "board-back").find_elements(By.TAG_NAME, value='div')
-        WHITE_EMPTY = 'cell selectable cell-off'
-        BLACK_NUMBER = 'light-up-task-cell'
-        BLACK_WALL = 'light-up-task-cell wall'
+        # self._wait(By.CLASS_NAME, "cell", TIMEOUT)
+        # cells = self._driver.find_element(By.CLASS_NAME, "board-back").find_elements(By.TAG_NAME, value='div')
+
+        WebDriverWait(self._driver, 20).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".task-cell, .cell"))
+        )
+
+        cells = self._driver.find_elements(By.CSS_SELECTOR, ".task-cell, .cell.selectable.cell-off")
+        
+        print(f"Found {len(cells)} cells on the board")
+
+        for idx, c in enumerate(cells[:10]):
+            print(f"Cell {idx}: class={c.get_attribute('class')}, text='{c.text}'")
+
+        EMPTY_CELL = "-1"
+        WHITE_CELL = "0"
+        BLACK_CELL = "1"
         special= {"daily": 30,"weekly": 30,"monthly":40}
 
         if not size.isnumeric():
             size = special[size]
         else:
             size = int(size)
+
         board = []  # returned 2d list
         row = []  # used for temporary row list
         i = 0
 
         # Iterate trough every tile on the tiles
         for tile in cells:
-            tileClass = tile.get_attribute('class')
-            tileText = tile.text
+            tileClass = tile.get_attribute("class").strip()
 
-            # Assigning correct cell value, and add it to the temp board
-            if tileClass == WHITE_EMPTY:
-                row.append("-1")
-            if tileClass == BLACK_WALL:
-                row.append("-2")
-            if tileClass == BLACK_NUMBER:
-                row.append(tileText)
+            if "cell-0" in tileClass:
+                # putih
+                row.append(WHITE_CELL)
+            elif "cell-1" in tileClass:
+                # hitam
+                row.append(BLACK_CELL)
+            else:
+                # kosong
+                row.append(EMPTY_CELL)
 
-            # Move to the next row on the board
-            if i == size:
+            if i == size - 1:
                 board.append(row)
                 row = []
                 i = 0
+            else:
+                i += 1
 
-            i += 1
+        # temp print
+        print("Board:")
+        for r in board:
+            print(" ".join(r))
+
         # self._driver.close()
         return id, board
 
@@ -219,18 +241,39 @@ class WebInteractor:
         file.writelines(data)
         file.close()
 
+
+    def click_cell(self, cell, clicks=1):
+        actions = ActionChains(self._driver)
+        actions.move_to_element(cell)
+        for _ in range(clicks):
+            actions.click()
+        actions.perform()
+
     '''
         @params answer: 2-dimensional array of integer
     '''
 
     def input_answer(self, answer):
-        self._wait(By.CLASS_NAME, "cell", TIMEOUT)
-        cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .light-up-task-cell")
-        # Convert answer from a 2-dimensional array to a 1-dimensional array
-        answer = [inner[0] for outer in answer.state.board for inner in outer]
-        for ans, cell in zip(answer, cells):
-            if ans == 5:
-                cell.click()  # Right click
+        cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .task-cell")
+
+        flat_answer = [val for row in answer.state.board for val in row]
+    
+        print(f"[INFO] Total board cells: {len(flat_answer)}")
+        print(f"[INFO] Total DOM cells: {len(cells)}")
+    
+        for idx, (cell, val) in enumerate(zip(cells, flat_answer)):
+            val = str(val)
+            cell_class = cell.get_attribute("class")
+            
+            # Hanya klik jika bukan task-cell
+            if "task-cell" in cell_class:
+                continue
+            
+            if val == "1":
+                self.click_cell(cell, 1)
+            elif val == "0":
+                self.click_cell(cell, 2)
+
     '''
         @return answer: 2-dimensional array of integer
     '''
