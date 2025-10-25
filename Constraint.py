@@ -3,9 +3,9 @@ WHITE = 0
 BLACK = 1
 
 '''
-    Terapkan constraint patterns ke board.
-    @params Board = 2D list of strings, "-1" = kosong, "0" = putih, "1" = hitam
-    @return: board yang sudah di-update dengan aturan yang bisa diterapkan
+    Apply constraint patterns to the puzzle board.
+    @param board: 2D list of integers (-1 = empty, 0 = white, 1 = black)
+    @return: Updated board after applying all possible rules
 '''
 def apply_constraints(board):
     size = len(board)
@@ -28,7 +28,8 @@ def apply_constraints(board):
 
 # random fills
 '''
-    Fill empty cells with random 0 or 1
+    Fill all empty cells with random colors (0 or 1).
+    Used when no more deterministic constraints apply.
 '''
 def fill_random(board):
     import random
@@ -44,8 +45,8 @@ def fill_random(board):
 # game patterns
 '''
     Pattern 0:
-    Setiap baris/kolom harus bersifat unik.
-    Tidak diperbolehkan ada dua baris/kolom identik.
+    - Each row and column must be unique.
+    - No two rows or columns can be identical.
 '''
 def pattern_0(board):
     size = len(board)
@@ -58,33 +59,36 @@ def pattern_0(board):
 
 '''
     Pattern 1:
-    Tidak boleh ada 3 bidak dengan warna yang sama.
-    Tutup semua ujung bidak yang adjecency dengan bidak warna berbeda.
+    - No three consecutive cells can have the same color.
+    - Close open ends of two consecutive identical tiles.
 
-    _ 0 0 _ to 1 0 0 1 
+    Example:
+    _ 0 0 _  →  1 0 0 1
 '''
 def pattern_1(board):
     size = len(board)
     changed = False
 
-    # check row
+    # check rows
     for r in range(size):
         for c in range(size-2):
             triple = board[r][c:c+3]
 
-            # if there are 2 same colors, and one empty in the edge
+            # If two same colors followed by an empty cell
             if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
                 old = board[r][c+2]
                 board[r][c+2] = WHITE if triple[0] == BLACK else BLACK
                 print(f"[pattern_1] Row {r} col {c+2} changed {old} -> {board[r][c+2]}")
                 changed = True
+
+            # If two same colors preceded by an empty cell
             if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
                 old = board[r][c]
                 board[r][c] = WHITE if triple[1] == BLACK else BLACK
                 print(f"[pattern_1] Row {r} col {c} changed {old} -> {board[r][c]}")
                 changed = True
 
-    # check column
+    # check columns
     for c in range(size):
         for r in range(size - 2):
             triple = [board[r+i][c] for i in range(3)]
@@ -105,16 +109,17 @@ def pattern_1(board):
 
 '''
     Pattern 2:
-    Tidak boleh ada 3 bidak dengan warna yang sama.
-    Halangi bidak dengan jeda 1 kotak, dengan bidak warna lain.
+    - No three cells with the same color, even with one gap.
+    - If two identical tiles are separated by one empty cell, fill the middle with the opposite color.
 
-    0 _ 0 to 0 1 0
+    Example:
+    0 _ 0  →  0 1 0
 '''
 def pattern_2(board):
     size = len(board)
     changed = False
 
-    # check row
+    # check rows
     for r in range(size):
         for c in range(size - 2):
             triple = board[r][c:c+3]
@@ -124,7 +129,7 @@ def pattern_2(board):
                 print(f"[pattern_2] Row {r} col {c+1} changed {old} -> {board[r][c+1]}")
                 changed = True
 
-    # check column
+    # check columns
     for c in range(size):
         for r in range(size - 2):
             triple = [board[r+i][c] for i in range(3)]
@@ -139,15 +144,14 @@ def pattern_2(board):
 
 '''
     Pattern 3:
-    Setiap baris/kolom harus memiliki jumlah hitam dan putih yang sama.
-    Isi otomatis jika salah satu warna sudah setengah penuh.
+    Each row and column must contain an equal number of black and white tiles. Automatically fill the rest when one color reaches half of the row/column.
 '''
 def pattern_3(board):
     size = len(board)
     changed = False
     half = size // 2
 
-    # check row
+    # check rows
     for r in range(size):
         row = board[r]
         if row.count(WHITE) == half:
@@ -165,7 +169,7 @@ def pattern_3(board):
                     print(f"[pattern_3] Row {r} col {c} changed {old} -> WHITE")
                     changed = True
     
-    # check column
+    # check columns
     for c in range(size):
         col = [board[r][c] for r in range(size)]
         if col.count(WHITE) == half:
@@ -186,6 +190,7 @@ def pattern_3(board):
     return changed
 
 '''
+    Pattern 4:
 
 '''
 def pattern_4(board):
@@ -197,6 +202,7 @@ def pattern_4(board):
     return changed
 
 '''
+    Pattern 5:
 
 '''
 def pattern_5(board):
@@ -208,6 +214,7 @@ def pattern_5(board):
     return changed
 
 '''
+    Pattern 6:
 
 '''
 def pattern_6(board):
@@ -219,7 +226,8 @@ def pattern_6(board):
     return changed
 
 '''
-
+    Pattern 7:
+    
 '''
 def pattern_7(board):
     size = len(board)

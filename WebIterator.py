@@ -209,7 +209,7 @@ class WebInteractor:
             else:
                 i += 1
 
-        # temp print
+        # debug print
         print("Board:")
         for r in board:
             print(" ".join(str(x) for x in r))
@@ -250,12 +250,20 @@ class WebInteractor:
 
         path = f"./Answer/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
 
+        # Ensure the folder is there
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
         file = open(path, "w")
         file.writelines(data)
         file.close()
 
+    '''
+        Simulate mouse clicks on a specific puzzle cell.
+        Selenium's ActionChains to move the mouse pointer to the target cell element on the web page.
+
+        @params cell: WebElement representing the target cell.
+        @params clicks: number of times to click the cell (default = 1).
+    '''
 
     def click_cell(self, cell, clicks=1):
         actions = ActionChains(self._driver)
@@ -265,30 +273,40 @@ class WebInteractor:
         actions.perform()
 
     '''
+        Input the solved puzzle answer into the web interface.
+        The rules for clicking:
+        - 1 (BALCK): single right-click
+        - 0 (WHITE): double right-click
+        - -1 (EMPTY): do nothing
+        *Cells with class "task-cell" (predefined) are never clicked
+
         @params answer: 2-dimensional array of integer
     '''
 
     def input_answer(self, answer):
+        # get all board cells (including regular and task-cells)
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .task-cell")
 
         flat_answer = [val for row in answer.state.board for val in row]
     
+        # debug print
         print(f"[INFO] Total board cells: {len(flat_answer)}")
         print(f"[INFO] Total DOM cells: {len(cells)}")
     
+        # iterate through each cell and its corresponding board value
         for idx, (cell, val) in enumerate(zip(cells, flat_answer)):
             # val = str(val)
             cell_class = cell.get_attribute("class")
             
-            # Hanya klik jika bukan task-cell
+            # skip if predefined task-cell
             if "task-cell" in cell_class:
                 continue
             
-            if val == 1:
+            if val == 1:    # BLACK
                 self.click_cell(cell, 1)
-            elif val == 0:
+            elif val == 0:  # WHUTE
                 self.click_cell(cell, 2)
-            elif val == -1:
+            elif val == -1: # EMPTY
                 continue
 
     '''
