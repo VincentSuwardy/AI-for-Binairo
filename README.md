@@ -30,7 +30,7 @@
    pip install selenium
    ```
 
-   Jika `python` versi 3.x
+   Jika `python` yang digunakan adalah versi 3.x:
 
    ```bash
    python -m pip install selenium
@@ -43,3 +43,4 @@
     ```
 
 3. Hasil retreive puzzle akan disimpan pada folder (`./Data/{size}{difficulty}/{id}.txt`) dan hasil jawaban solver akan disimpan pada folder (`./Asnwer/{size}{difficulty}/{id}.txt`)
+   Jika folder tidak tersedia, program akan secara otomatis membuatkan folder untuk menyimpan `.txt`
