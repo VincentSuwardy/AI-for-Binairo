@@ -3,6 +3,7 @@
 ### [LNV5903] AI for Binairo
 
 **Dibuat oleh:** Vincent Emmanuel Suwardy / 6182201067
+
 **Dosen pembimbing:** Lionov Ph.D
 
 ## Deskripsi
