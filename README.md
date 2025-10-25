@@ -36,12 +36,13 @@ Binairo dimainkan pada papan berbentuk persegi panjang dengan ukuran yang bervar
    python -m pip install selenium
    ``` 
 
-2. Jalankan program dengan perintah:
+2. Pada `Main.py`, sesuaikan nilai variabel `PUZZLE_SIZE` dan `PUZZLE_DIFF` sesuai ukuran dan tingkat kesulitan puzzle yang ingin dijalankan.
+
+3. Jalankan program dengan perintah:
 
     ```bash
     python Main.py
     ```
 
-3. Hasil pengambilan puzzle akan disimpan pada folder (`./Data/{size}{difficulty}/{id}.txt`), sedangkan hasil jawaban solver akan disimpan pada folder (`./Asnwer/{size}{difficulty}/{id}.txt`)  
-   Dimana `{size}` adalah ukuran puzzle, `{difficulty}` adalah tingkat kesulitan puzzle, dan `{id}` adalah id puzzle  
-   Jika folder belum tersedia, program akan membuatnya secara otomatis.
+4. Hasil pengambilan puzzle akan disimpan pada folder (`./Data/{size}{difficulty}/{id}.txt`), sedangkan hasil jawaban solver akan disimpan pada folder (`./Asnwer/{size}{difficulty}/{id}.txt`).  
+   Dimana `{size}` adalah ukuran puzzle, `{difficulty}` adalah tingkat kesulitan puzzle, dan `{id}` adalah id puzzle. Jika folder belum tersedia, program akan membuatnya secara otomatis.
