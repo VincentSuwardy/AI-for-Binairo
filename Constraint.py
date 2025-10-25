@@ -19,11 +19,29 @@ def apply_constraints(board):
         changed |= pattern_1(board)
         changed |= pattern_2(board)
         changed |= pattern_3(board)
+        # changed |= pattern_4(board)
+        # changed |= pattern_5(board)
+        # changed |= pattern_6(board)
+        # changed |= pattern_7(board)
 
     return board
 
-# game patterns
+# random fills
+'''
+    Fill empty cells with random 0 or 1
+'''
+def fill_random(board):
+    import random
+    size = len(board)
+    for r in range(size):
+        for c in range(size):
+            if board[r][c] == EMPTY:
+                old = board[r][c]
+                board[r][c] = random.choice([WHITE, BLACK])
+                print(f"[fill_random] Row {r} col {c} changed {old} -> {board[r][c]}")
+    return board
 
+# game patterns
 '''
     Pattern 0:
     Setiap baris/kolom harus bersifat unik.
@@ -210,17 +228,3 @@ def pattern_7(board):
     # TODO: implement algorithm
     
     return changed
-
-'''
-    Fill empty cells with random 0 or 1
-'''
-def fill_random(board):
-    import random
-    size = len(board)
-    for r in range(size):
-        for c in range(size):
-            if board[r][c] == EMPTY:
-                old = board[r][c]
-                board[r][c] = random.choice([WHITE, BLACK])
-                print(f"[fill_random] Row {r} col {c} changed {old} -> {board[r][c]}")
-    return board
