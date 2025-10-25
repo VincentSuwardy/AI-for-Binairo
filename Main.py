@@ -1,43 +1,67 @@
 import random
 from WebIterator import WebInteractor, URL
+from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
 
-class DummyAnswer:
+'''
+    Represent the final solved answer of a puzzle.
+    Constains an internal State class that stores the current board configuration as a 2D list of integers.
+'''
+class Answer:
     class State:
         def __init__(self, board):
+            # store the solved board (2D array)
             self.board = board
     def __init__(self, board):
         self.state = self.State(board)
 
+'''
+    Main program for solving and submitting.
+
+    Steps:
+        1. Initialize the web iterator.
+        2. Retrieve a puzzle from the web.
+        3. Apply constraint-based solving rules.
+        4. TODO: Apply genetic algorithm based on selected reference(s).
+        5. Save both the puzzle and its solution locally.
+        6. Input the solution back into the website.
+'''
 def main():
-    # inisialisasi objek iterator
+    # initialize the web iterator
     iterator = WebInteractor(URL)
 
-    # ambil puzzle
-    size = "6"  # ukuran: 6, 8, 10, 14, 20
+    # define puzzle config
+    size = "14"         # size: 6, 8, 10, 14, 20
     difficulty = "easy" # diff: easy, hard
 
+    # retrieve puzzle from the web
     id, board = iterator.open_puzzle(size, difficulty)
 
-    # cek hasil
+    # validate if puzzle was successfully retrieved
     if not board:
         print("Fail to get puzzle")
         iterator.close()
         return
     
+    # debug: puzzle information
     print(f"Succesfully get puzzle")
-    print("Board:")
-    for row in board:
-        print(" ".join(row))
+    # print("Board:")
+    # for row in board:
+    #     print(" ".join(str(x) for x in row))
 
-    # simpan puzzle ke file local
+    # save original puzzle locally
     iterator.save_puzzle(id, board, size, difficulty)
 
-    random_board = [[random.choice([0, 1]) for _ in range(int(size))] for _ in range(int(size))]
-    
-    random_answer = DummyAnswer(random_board)
+    # solving stage
+    board = apply_constraints(board)
+    # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
 
-    iterator.input_answer(random_answer)
+    answer = Answer(board)
+    iterator.save_answer(id, answer, size, difficulty)  # save the final solved answer to local file
 
+    # input the solved answer into the website
+    iterator.input_answer(answer)
+
+    # (optional) close the browser session
     # iterator.close()
 
 if __name__ == "__main__":
