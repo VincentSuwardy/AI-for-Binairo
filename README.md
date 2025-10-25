@@ -44,5 +44,5 @@ Binairo dimainkan pada papan berbentuk persegi panjang dengan ukuran yang bervar
     python Main.py
     ```
 
-4. Hasil pengambilan puzzle akan disimpan pada folder (`./Data/{size}{difficulty}/{id}.txt`), sedangkan hasil jawaban solver akan disimpan pada folder (`./Asnwer/{size}{difficulty}/{id}.txt`).  
+4. Hasil pengambilan puzzle akan disimpan pada folder (`./Data/{size}{difficulty}/{id}.txt`), sedangkan hasil jawaban solver akan disimpan pada folder (`./Answer/{size}{difficulty}/{id}.txt`).  
    Dimana `{size}` adalah ukuran puzzle, `{difficulty}` adalah tingkat kesulitan puzzle, dan `{id}` adalah id puzzle. Jika folder belum tersedia, program akan membuatnya secara otomatis.
