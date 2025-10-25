@@ -33,58 +33,7 @@ def pattern_0(board):
     size = len(board)
     changed = False
 
-    # helper: fill empty cell(s) so there's no duplicate
-    def fill_row_constraint(row, full_rows, row_idx=None, col_idx=None):
-        empty_idx = [i for i, v in enumerate(row) if v == EMPTY]
-        if not empty_idx:
-            return False
-        
-        # generate all combinations, fill -1 with 0/1
-        from itertools import product
-        possible_fills = list(product([WHITE, BLACK], repeat=len(empty_idx)))
-        for fill in possible_fills:
-            temp_row = row.copy()
-            for idx, val in zip(empty_idx, fill):
-                temp_row[idx] = val
-            if temp_row not in full_rows:
-                candidate = temp_row
-                break
-        else:
-            return False    # no valid combination found
-        
-        # check if candidate different with original
-        if candidate != row:
-            for i, idx in enumerate(empty_idx):
-                old_val = row[idx]
-                row[idx] = candidate[idx]
-                loc = f"Row {row_idx}" if row_idx is not None else f"Col {col_idx}"
-                print(f"[pattern_0] {loc} col {idx} changed {old_val} -> {row[idx]}")
-            return True
-        return False
-    
-    # take all full rows
-    full_rows = [row for row in board if EMPTY not in row]
-
-    # process rows
-    for r in range(size):
-        if EMPTY in board[r]:
-            if fill_row_constraint(board[r], full_rows, row_idx=r):
-                changed = True
-
-    # process columns
-    transposed = [[board[r][c] for r in range(size)] for c in range(size)]
-    full_cols = [col for col in transposed if EMPTY not in col]
-
-    for c in range(size):
-        if EMPTY in transposed[c]:
-            if fill_row_constraint(transposed[c], full_cols, col_idx=c):
-                # rewrite board
-                for r in range(size):
-                    old_val = board[r][c]
-                    board[r][c] = transposed[c][r]
-                    if old_val != board[r][c]:
-                        print(f"[pattern_0] Col {c} row {r} changed {old_val} -> {board[r][c]}")
-                changed = True
+    # TODO: implement algorithm
     
     return changed
 
@@ -218,6 +167,49 @@ def pattern_3(board):
 
     return changed
 
+'''
+
+'''
+def pattern_4(board):
+    size = len(board)
+    changed = False
+
+    # TODO: implement algorithm
+    
+    return changed
+
+'''
+
+'''
+def pattern_5(board):
+    size = len(board)
+    changed = False
+
+    # TODO: implement algorithm
+    
+    return changed
+
+'''
+
+'''
+def pattern_6(board):
+    size = len(board)
+    changed = False
+
+    # TODO: implement algorithm
+    
+    return changed
+
+'''
+
+'''
+def pattern_7(board):
+    size = len(board)
+    changed = False
+
+    # TODO: implement algorithm
+    
+    return changed
 
 '''
     Fill empty cells with random 0 or 1
