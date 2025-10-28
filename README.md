@@ -1,6 +1,6 @@
 # AIF234001/AIF234002 Tugas Akhir 
 
-### [LNV5903] AI for Binairo
+### [LNV5903ACS] AI for Binairo
 
 **Dibuat oleh:** Vincent Emmanuel Suwardy / 6182201067  
 **Dosen pembimbing:** Lionov, S.Kom., M.Sc., Ph.D.
