@@ -9,7 +9,7 @@
 
 [**Binairo**](https://www.puzzle-binairo.com/), juga dikenal **Takuzu**, adalah puzzle logika dengan aturan sederhana namun menantang untuk diselesaikan.
 
-**Aturan**  
+### **Aturan**  
 Binairo dimainkan pada papan berbentuk persegi panjang dengan ukuran yang bervariasi. Beberapa sel sudah diisi dengan lingkaran hitam atau putih, sementara sisanya kosong. Tujuan permainan adalah mengisi semua sel sehingga:
 1. Setiap baris dan kolom memiliki jumlah lingkaran putih dan hitam yang sama.
 2. Tidak ada lebih dari dua lingkaran dengan warna yang sama yang berdampingan.
