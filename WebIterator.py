@@ -184,10 +184,11 @@ class WebInteractor:
 
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".task-cell, .cell.selectable.cell-off")
         
-        print(f"Found {len(cells)} cells on the board")
+        # print(f"Found {len(cells)} cells on the board")
 
-        for idx, c in enumerate(cells[:10]):
-            print(f"Cell {idx}: class={c.get_attribute('class')}, text='{c.text}'")
+        # debug for css element
+        # for idx, c in enumerate(cells[:10]):
+        #     print(f"Cell {idx}: class={c.get_attribute('class')}, text='{c.text}'")
 
         EMPTY_CELL = -1
         WHITE_CELL = 0
@@ -315,7 +316,13 @@ class WebInteractor:
     
         # iterate through each cell and its corresponding board value
         for idx, (cell, val) in enumerate(zip(cells, flat_answer)):
-            cell_class = cell.get_attribute("class")
+            # cell_class = cell.get_attribute("class")
+
+            try:
+                cell_class = cell.get_attribute("class")
+            except StaleElementReferenceException:
+                print("[WARN] Stale element encountered, skipping this cell.")
+                continue
             
             # skip if predefined task-cell
             if "task-cell" in cell_class:
