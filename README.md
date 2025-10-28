@@ -48,4 +48,4 @@ Binairo dimainkan pada papan berbentuk persegi panjang dengan ukuran yang bervar
    - `{size}` adalah ukuran puzzle, 
    - `{difficulty}` adalah tingkat kesulitan puzzle, dan 
    - `{id}` adalah id puzzle.   
-   Jika folder belum tersedia, program akan membuatnya secara otomatis.
+Jika folder belum tersedia, program akan membuatnya secara otomatis.
