@@ -8,7 +8,7 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
     size: 6 | 8 | 10 | 14 | 20
     diff: easy | hard
 '''
-PUZZLE_SIZE = "4"
+PUZZLE_SIZE = "6"
 PUZZLE_DIFF = "easy"
 
 '''
@@ -36,7 +36,7 @@ class Answer:
         7. Input the solution back into the website.
 '''
 def main():
-    # checker handler
+    # error handler
     if PUZZLE_SIZE != "6" and PUZZLE_SIZE != "8" and PUZZLE_SIZE != "10" and PUZZLE_SIZE != "14" and PUZZLE_SIZE != "20":
         sys.exit("ERROR: Invalid puzzle size!")
     if PUZZLE_DIFF != "easy" and PUZZLE_DIFF != "hard":
@@ -59,7 +59,7 @@ def main():
         return
     
     # debug: puzzle information
-    print(f"Succesfully get puzzle")
+    # print(f"Succesfully get puzzle")
     # print("Board:")
     # for row in board:
     #     print(" ".join(str(x) for x in row))
