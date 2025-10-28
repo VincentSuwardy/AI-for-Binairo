@@ -48,7 +48,9 @@ class WebInteractor:
         # Accept and close privacy preference window
         # self._wait(By.XPATH, "/html/body/div[1]/div/div/div/div[2]/div/button[2]", TIMEOUT).click()
     
-    # Driver setup for Chrome 
+    '''
+        Driver setup for Chrome 
+    '''
     # def _driver_setup(self):
     #     service = Service()
     #     options = webdriver.ChromeOptions()
@@ -56,7 +58,9 @@ class WebInteractor:
     #     driver = webdriver.Chrome(service=service, options=options)
     #     return driver
 
-    # Driver setup for Microsoft Edge
+    '''
+        Driver setup for Microsoft Edge
+    '''
     def _driver_setup(self):
         from selenium.webdriver.edge.service import Service as EdgeService
         from selenium.webdriver.edge.options import Options as EdgeOptions
