@@ -192,6 +192,7 @@ class WebInteractor:
         EMPTY_CELL = -1
         WHITE_CELL = 0
         BLACK_CELL = 1
+        # TODO: implement daily, weekly, monthly puzzle input and output
         special= {"daily": 30,"weekly": 30,"monthly":40}
 
         if not size.isnumeric():

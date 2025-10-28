@@ -51,7 +51,7 @@ def fill_random(board):
             if board[r][c] == EMPTY:
                 old = board[r][c]
                 board[r][c] = random.choice([WHITE, BLACK])
-                print(f"[fill_random] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
+                print(f"[fill_rand] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
     return board
 
 # game patterns
