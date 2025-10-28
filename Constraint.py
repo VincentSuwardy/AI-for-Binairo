@@ -24,6 +24,9 @@ def apply_constraints(board):
         # changed |= pattern_6(board)
         # changed |= pattern_7(board)
 
+        # fill random
+        # changed |= fill_random(board)
+
     return board
 
 # random fills
