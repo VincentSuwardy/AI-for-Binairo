@@ -320,7 +320,7 @@ class WebInteractor:
 
             try:
                 cell_class = cell.get_attribute("class")
-            except StaleElementReferenceException: # type: ignore
+            except StaleElementReferenceException:
                 print("[WARN] Stale element encountered, skipping this cell.")
                 continue
             
