@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
 PATH_DATA = "./Data"
 TIMEOUT = 10  # seconds
@@ -303,12 +304,22 @@ class WebInteractor:
     '''
 
     def input_answer(self, answer):
+        flat_answer = [val for row in answer.state.board for val in row]
+
+        # wait for the cells to be present initially
+        try:
+            WebDriverWait(self._driver, TIMEOUT).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".cell, .task-cell"))
+            )
+        except TimeoutException:
+            print("[ERROR] Cells did not appear within timeout.")
+            return
+
         # get all board cells (including regular and task-cells)
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .task-cell")
 
         # cells = [c for c in self._driver.find_elements(By.CSS_SELECTOR, ".cell") if "task-cell" not in c.get_attribute("class")]
 
-        flat_answer = [val for row in answer.state.board for val in row]
     
         # debug print
         # print(f"[INFO] Total board cells: {len(flat_answer)}")
