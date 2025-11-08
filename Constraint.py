@@ -28,7 +28,7 @@ def apply_constraints(board):
         changed |= pattern_1(board)
         changed |= pattern_2(board)
         changed |= pattern_3(board)
-        # changed |= pattern_4(board)
+        changed |= pattern_4(board)
         # changed |= pattern_5(board)
         # changed |= pattern_6(board)
         # changed |= pattern_7(board)
@@ -283,14 +283,89 @@ def pattern_3(board):
     return changed
 
 '''
-    Pattern 4:
+    Pattern 4: specific case only
 
+    1 _ _ 1 _ 0 1 1 0 1 1 0 (1 _ 0 _ 1) _ _ 1 
+    check if 1 left with 1 piece, fill rest with 0
+    1 0 0 1 0 0 1 1 0 1 1 0 1 _ 0 _ 1 0 0 1
 '''
 def pattern_4(board):
     size = len(board)
     changed = False
 
-    # TODO: implement algorithm
+    def fill_remaining(line, exclude_idx, fill_color, r=None, is_row=True):
+        nonlocal changed
+        for i in range(size):
+            if i not in exclude_idx and line[i] == EMPTY:
+                old = line[i]
+                line[i] = fill_color
+                changed = True
+                if is_row:
+                    print(f"[pattern_4] Row {r} col {i} changed {color_name(old)} -> {color_name(fill_color)}")
+                else:
+                    print(f"[pattern_4] Col {r} row {i} changed {color_name(old)} -> {color_name(fill_color)}")
+
+    # check rows
+    for r in range(size):
+        row = board[r]
+        count_white = row.count(WHITE)
+        count_black = row.count(BLACK)
+        empty_count = row.count(EMPTY)
+        half = size // 2
+
+        # check both colors left
+        white_left = half - count_white
+        black_left = half - count_black
+
+        # skip if both left with more or less than 1
+        if white_left != 1 and black_left != 1:
+            continue
+
+        for c in range(size - 4):
+            seg = row[c:c+5]
+
+            # case: 1 _ 0 _ 1
+            if seg[0] == seg[4] == BLACK and seg[2] == WHITE and seg[1] == seg[3] == EMPTY:
+                if black_left == 1:  # only if BLACK left with 1 piece
+                    fill_remaining(row, [c+1, c+3], WHITE, r, True)
+
+            # case: 0 _ 1 _ 0
+            elif seg[0] == seg[4] == WHITE and seg[2] == BLACK and seg[1] == seg[3] == EMPTY:
+                if white_left == 1:  # only if WHITE left with 1 piece
+                    fill_remaining(row, [c+1, c+3], BLACK, r, True)
+
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+        count_white = col.count(WHITE)
+        count_black = col.count(BLACK)
+        empty_count = col.count(EMPTY)
+        half = size // 2
+
+        white_left = half - count_white
+        black_left = half - count_black
+
+        if white_left != 1 and black_left != 1:
+            continue
+
+        for r in range(size - 4):
+            seg = col[r:r+5]
+
+            # case: 1 _ 0 _ 1
+            if seg[0] == seg[4] == BLACK and seg[2] == WHITE and seg[1] == seg[3] == EMPTY:
+                if black_left == 1:
+                    # fill all empty cell unless idx in pattern
+                    fill_remaining(col, [r+1, r+3], WHITE, c, False)
+                    # write back to board
+                    for rr in range(size):
+                        board[rr][c] = col[rr]
+
+            # case: 0 _ 1 _ 0
+            elif seg[0] == seg[4] == WHITE and seg[2] == BLACK and seg[1] == seg[3] == EMPTY:
+                if white_left == 1:
+                    fill_remaining(col, [r+1, r+3], BLACK, c, False)
+                    for rr in range(size):
+                        board[rr][c] = col[rr]
     
     return changed
 
