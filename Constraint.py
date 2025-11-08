@@ -29,7 +29,7 @@ def apply_constraints(board):
         changed |= pattern_2(board)
         changed |= pattern_3(board)
         changed |= pattern_4(board)
-        # changed |= pattern_5(board)
+        changed |= pattern_5(board)
         # changed |= pattern_6(board)
         # changed |= pattern_7(board)
 
@@ -284,10 +284,10 @@ def pattern_3(board):
 
 '''
     Pattern 4: specific case only
+    check if one color has only 1 piece left, then fill the rest with the opposite color
 
     1 _ _ 1 _ 0 1 1 0 1 1 0 (1 _ 0 _ 1) _ _ 1 
-    check if 1 left with 1 piece, fill rest with 0
-    1 0 0 1 0 0 1 1 0 1 1 0 1 _ 0 _ 1 0 0 1
+    1 0 0 1 0 0 1 1 0 1 1 0 (1 _ 0 _ 1) 0 0 1
 '''
 def pattern_4(board):
     size = len(board)
@@ -370,26 +370,155 @@ def pattern_4(board):
     return changed
 
 '''
-    Pattern 5:
+    Pattern 5: specific case only
+    check if the remaining pieces have a 1:3 ratio
 
+    find 4 adjacent EMPTY cells
+    0 0 1 0 0 1 1 0 _ _ _ _ 0 1 1 0 0 1 1 0
+
+    fill the edge cells with the color that has 3 pieces left
+    0 0 1 0 0 1 1 0 1 _ _ 1 0 1 1 0 0 1 1 0
 '''
 def pattern_5(board):
     size = len(board)
+    half = size // 2
     changed = False
 
-    # TODO: implement algorithm
-    
+    # check rows
+    for r in range(size):
+        row = board[r]
+        count_white = row.count(WHITE)
+        count_black = row.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        # check ratio 1:3
+        if sorted([white_left, black_left]) == [1, 3]:
+            color3 = BLACK if black_left == 3 else WHITE
+
+            # check if there are 4 EMPTY that adjacent
+            for i in range(size - 3):
+                if all(row[i + j] == EMPTY for j in range(4)):
+                    # fill left egde
+                    if row[i] == EMPTY:
+                        old = row[i]
+                        row[i] = color3
+                        print(f"[pattern_5] Row {r} col {i} changed {color_name(old)} -> {color_name(color3)}")
+                        changed = True
+                    # fill right edge
+                    if row[i + 3] == EMPTY:
+                        old = row[i + 3]
+                        row[i + 3] = color3
+                        print(f"[pattern_5] Row {r} col {i+3} changed {color_name(old)} -> {color_name(color3)}")
+                        changed = True
+
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+        count_white = col.count(WHITE)
+        count_black = col.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        if sorted([white_left, black_left]) == [1, 3]:
+            color3 = BLACK if black_left == 3 else WHITE
+
+            for i in range(size - 3):
+                if all(col[i + j] == EMPTY for j in range(4)):
+                    # fill top edge
+                    if col[i] == EMPTY:
+                        old = col[i]
+                        col[i] = color3
+                        print(f"[pattern_5] Col {c} row {i} changed {color_name(old)} -> {color_name(color3)}")
+                        changed = True
+                    # fill bottom egde
+                    if col[i + 3] == EMPTY:
+                        old = col[i + 3]
+                        col[i + 3] = color3
+                        print(f"[pattern_5] Col {c} row {i+3} changed {color_name(old)} -> {color_name(color3)}")
+                        changed = True
+
+        # rewrite to board
+        for r in range(size):
+            board[r][c] = col[r]
+
     return changed
 
-'''
-    Pattern 6:
 
+'''
+    Pattern 6: specific case only
+    check if there's a color (in this case 0) with only 1 left to put
+
+    0 (_ _ _) 0 _ 1 0 0 1 1 0 0 1 1 0 0 1 1 0
+
+    if there are two tiles of the same color (0) enclosing three empty cells,
+    and that color only has one tile left to place,
+    then the remaining tile must be placed in the middle of those three empty cells
+ 
+    result:
+    0 _ 0 _ 0 _ 1 0 0 1 1 0 0 1 1 0 0 1 1 0
 '''
 def pattern_6(board):
     size = len(board)
     changed = False
+    half = size // 2
 
-    # TODO: implement algorithm
+    # check rows
+    for r in range(size):
+        row = board[r]
+        count_white = row.count(WHITE)
+        count_black = row.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        # continue if and only if there is a color with 1 count left
+        if white_left == 1 or black_left == 1:
+            color_x = WHITE if white_left == 1 else BLACK
+
+            # scan every 5 cells adjacent
+            for i in range(size - 4):
+                seg = row[i:i+5]
+
+                # find pattern (X _ _ _ X)
+                if (
+                    seg[0] == color_x
+                    and seg[4] == color_x
+                    and seg[1] == seg[2] == seg[3] == EMPTY
+                ):
+                    # isi sel tengah (i+2)
+                    if row[i+2] == EMPTY:
+                        old = row[i+2]
+                        row[i+2] = color_x
+                        print(f"[pattern_6] Row {r} col {i+2} changed {color_name(old)} -> {color_name(color_x)}")
+                        changed = True
+    
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+        count_white = col.count(WHITE)
+        count_black = col.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        if white_left == 1 or black_left == 1:
+            color_x = WHITE if white_left == 1 else BLACK
+
+            for i in range(size - 4):
+                seg = col[i:i+5]
+                if (
+                    seg[0] == color_x
+                    and seg[4] == color_x
+                    and seg[1] == seg[2] == seg[3] == EMPTY
+                ):
+                    if col[i+2] == EMPTY:
+                        old = col[i+2]
+                        col[i+2] = color_x
+                        print(f"[pattern_6] Col {c} row {i+2} changed {color_name(old)} -> {color_name(color_x)}")
+                        changed = True
+
+        # rewrite to board
+        for r in range(size):
+            board[r][c] = col[r]
     
     return changed
 
@@ -398,6 +527,18 @@ def pattern_6(board):
     
 '''
 def pattern_7(board):
+    size = len(board)
+    changed = False
+
+    # TODO: implement algorithm
+    
+    return changed
+
+'''
+    Pattern 8:
+    
+'''
+def pattern_8(board):
     size = len(board)
     changed = False
 
