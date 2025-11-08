@@ -24,7 +24,7 @@ def apply_constraints(board):
         changed = False
 
         # apply rules
-        # changed |= pattern_0(board)
+        changed |= pattern_0(board)
         changed |= pattern_1(board)
         changed |= pattern_2(board)
         changed |= pattern_3(board)
@@ -63,9 +63,90 @@ def fill_random(board):
 def pattern_0(board):
     size = len(board)
     changed = False
+    half = size // 2
 
-    # TODO: implement algorithm
-    
+    # check rows
+    for r in range(size):
+        row = board[r]
+        if EMPTY not in row:
+            continue    # skip full row
+
+        count_white = row.count(WHITE)
+        count_black = row.count(BLACK)
+
+        # find all fully filled rows
+        for ref_r in range(size):
+            ref_row = board[ref_r]
+            if EMPTY in ref_row:
+                continue    # only compare with full row
+
+            # check if all non-empty cell in this row is identically with ref_row
+            identical = True
+            for c in range(size):
+                if row[c] != EMPTY and row[c] != ref_row[c]:
+                    identical = False
+                    break
+
+            if not identical:
+                continue
+
+            # check color count
+            target_color = None
+            if count_white == half - 1:
+                target_color = WHITE
+            elif count_black == half - 1:
+                target_color = BLACK
+
+            if target_color is None:
+                continue  # no color with only 1 piece left
+
+            # fill all empty cell in position with opposite color in ref_row
+            if row[c] == EMPTY and ref_row[c] == (BLACK if target_color == WHITE else WHITE):
+                    old = row[c]
+                    row[c] = target_color
+                    print(f"[pattern_0] Row {r} col {c} changed {color_name(old)} -> {color_name(row[c])}")
+                    changed = True
+
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+        if EMPTY not in col:
+            continue
+
+        count_white = col.count(WHITE)
+        count_black = col.count(BLACK)
+
+        for ref_c in range(size):
+            ref_col = [board[r][ref_c] for r in range(size)]
+            if EMPTY in ref_col or ref_c == c:
+                continue
+
+            identical = True
+            for r in range(size):
+                if board[r][c] != EMPTY and board[r][c] != ref_col[r]:
+                    identical = False
+                    break
+
+            if not identical:
+                continue
+
+            target_color = None
+            if count_white == half - 1:
+                target_color = WHITE
+            elif count_black == half - 1:
+                target_color = BLACK
+
+            if target_color is None:
+                continue
+
+            for r in range(size):
+                if board[r][c] == EMPTY and ref_col[r] == (BLACK if target_color == WHITE else WHITE):
+                    old = board[r][c]
+                    board[r][c] = target_color
+                    print(f"[pattern_0] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                    changed = True
+
+
     return changed
 
 

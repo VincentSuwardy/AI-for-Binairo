@@ -8,8 +8,8 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
     size: 6 | 8 | 10 | 14 | 20
     diff: easy | hard
 '''
-PUZZLE_SIZE = "20"
-PUZZLE_DIFF = "easy"
+PUZZLE_SIZE = "8"
+PUZZLE_DIFF = "hard"
 
 '''
     Represent the final solved answer of a puzzle.
@@ -38,9 +38,9 @@ class Answer:
 def main():
     # error handler
     if PUZZLE_SIZE != "6" and PUZZLE_SIZE != "8" and PUZZLE_SIZE != "10" and PUZZLE_SIZE != "14" and PUZZLE_SIZE != "20":
-        sys.exit("ERROR: Invalid puzzle size!")
+        sys.exit("[ERROR] Invalid puzzle size!")
     if PUZZLE_DIFF != "easy" and PUZZLE_DIFF != "hard":
-        sys.exit("ERROR: Invalid puzzle difficulty!")
+        sys.exit("[ERROR] Invalid puzzle difficulty!")
 
     # initialize the web iterator
     iterator = WebInteractor(URL)
