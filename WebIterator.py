@@ -191,12 +191,6 @@ class WebInteractor:
         )
 
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".task-cell, .cell.selectable.cell-off")
-        
-        # print(f"Found {len(cells)} cells on the board")
-
-        # debug for css element
-        # for idx, c in enumerate(cells[:10]):
-        #     print(f"Cell {idx}: class={c.get_attribute('class')}, text='{c.text}'")
 
         EMPTY_CELL = -1
         WHITE_CELL = 0
@@ -215,7 +209,7 @@ class WebInteractor:
             size = int(size)
 
         board = []  # returned 2d list
-        row = []  # used for temporary row list
+        row = []    # used for temporary row list
         i = 0
 
         # Iterate trough every tile on the tiles
@@ -327,13 +321,6 @@ class WebInteractor:
 
         # get all board cells (including regular and task-cells)
         cells = self._driver.find_elements(By.CSS_SELECTOR, ".cell, .task-cell")
-
-        # cells = [c for c in self._driver.find_elements(By.CSS_SELECTOR, ".cell") if "task-cell" not in c.get_attribute("class")]
-
-    
-        # debug print
-        # print(f"[INFO] Total board cells: {len(flat_answer)}")
-        # print(f"[INFO] Total DOM cells: {len(cells)}")
     
         # iterate through each cell and its corresponding board value
         for idx, (cell, val) in enumerate(zip(cells, flat_answer)):
@@ -351,7 +338,7 @@ class WebInteractor:
             
             if val == 1:    # BLACK
                 self.click_cell(cell, 1)
-            elif val == 0:  # WHUTE
+            elif val == 0:  # WHITE
                 self.click_cell(cell, 2)
             elif val == -1: # EMPTY
                 continue
