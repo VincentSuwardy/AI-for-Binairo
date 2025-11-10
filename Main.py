@@ -1,5 +1,3 @@
-import datetime
-import random
 import sys
 from WebIterator import WebInteractor, URL
 from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
