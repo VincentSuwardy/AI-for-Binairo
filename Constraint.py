@@ -16,25 +16,26 @@ def color_name(value):
     @param board: 2D list of integers (-1 = empty, 0 = white, 1 = black)
     @return: Updated board after applying all possible rules
 '''
-def apply_constraints(board):
-    size = len(board)
+def apply_constraints(board, difficulty):
     changed = True
 
     while changed:
         changed = False
 
         # apply rules
-        changed |= pattern_0(board)
         changed |= pattern_1(board)
         changed |= pattern_2(board)
         changed |= pattern_3(board)
-        changed |= pattern_4(board)
-        changed |= pattern_5(board)
-        changed |= pattern_6(board)
-        changed |= pattern_7(board)
-        changed |= pattern_8(board)
-        changed |= pattern_9(board)
-        changed |= pattern_10(board)
+
+        if difficulty in ["hard", None]:
+            changed |= pattern_0(board)
+            changed |= pattern_4(board)
+            changed |= pattern_5(board)
+            changed |= pattern_6(board)
+            changed |= pattern_7(board)
+            changed |= pattern_8(board)
+            changed |= pattern_9(board)
+            changed |= pattern_10(board)
 
     return board
 
