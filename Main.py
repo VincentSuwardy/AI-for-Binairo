@@ -1,3 +1,4 @@
+import datetime
 import random
 import sys
 from WebIterator import WebInteractor, URL
@@ -5,11 +6,11 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
 
 '''
     DEFINE PUZZLE CONFIG
-    size: 6 | 8 | 10 | 14 | 20
-    diff: easy | hard
+    size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
+    diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "20"
-PUZZLE_DIFF = "hard"
+PUZZLE_SIZE = "8"
+PUZZLE_DIFF = "easy"
 
 '''
     Represent the final solved answer of a puzzle.
@@ -37,9 +38,9 @@ class Answer:
 '''
 def main():
     # error handler
-    if PUZZLE_SIZE != "6" and PUZZLE_SIZE != "8" and PUZZLE_SIZE != "10" and PUZZLE_SIZE != "14" and PUZZLE_SIZE != "20":
+    if PUZZLE_SIZE not in ["6", "8", "10", "14", "20", "daily", "weekly", "monthly"]:
         sys.exit("[ERROR] Invalid puzzle size!")
-    if PUZZLE_DIFF != "easy" and PUZZLE_DIFF != "hard":
+    if PUZZLE_SIZE not in ["daily", "weekly", "monthly"] and PUZZLE_DIFF not in ["easy", "hard"]:
         sys.exit("[ERROR] Invalid puzzle difficulty!")
 
     # initialize the web iterator

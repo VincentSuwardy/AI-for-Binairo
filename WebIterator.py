@@ -16,29 +16,18 @@ URL = {
     "base_url": "https://www.puzzle-binairo.com/",
     "specific_url": "",
     "size_url": {
-        6: {
-            "easy": "binairo-6x6-easy/",
-            "hard": "binairo-6x6-hard/",
-        },
-        8: {
-            "easy": "binairo-8x8-easy/",
-            "hard": "binairo-8x8-hard/",
-        },
-        10: {
-            "easy": "binairo-10x10-easy/",
-            "hard": "binairo-10x10-hard/",
-        },
-        14: {
-            "easy": "binairo-14x14-easy/",
-            "hard": "binairo-14x14-hard/",
-        },
-        20: {
-            "easy": "binairo-20x20-easy/",
-            "hard": "binairo-20x20-hard/",
-        },
+        6: {"easy": "binairo-6x6-easy/", "hard": "binairo-6x6-hard/"},
+        8: {"easy": "binairo-8x8-easy/", "hard": "binairo-8x8-hard/"},
+        10: {"easy": "binairo-10x10-easy/", "hard": "binairo-10x10-hard/"},
+        14: {"easy": "binairo-14x14-easy/", "hard": "binairo-14x14-hard/"},
+        20: {"easy": "binairo-20x20-easy/", "hard": "binairo-20x20-hard/"},
+    },
+    "special_url": {
+        "daily": "daily-binairo/",
+        "weekly": "weekly-binairo/",
+        "monthly": "monthly-binairo/",
     },
 }
-
 
 class WebInteractor:
     def __init__(self, url, credentials=None):
@@ -146,39 +135,59 @@ class WebInteractor:
         url = self.URL["base_url"]
 
         # Specific puzzles larger than 20 in size
-        if size.isnumeric() and id:
-            url += self.URL["specific_url"]
+        # if size.isnumeric() and id:
+        #     url += self.URL["specific_url"]
+        # else:
+        #     if size.isnumeric():
+        #         url += self.URL["size_url"][int(size)][difficulty]
+        #     else:
+        #         url += self.URL["size_url"][size]
+        # self._driver.get(url)
+
+        # Handle special puzzle (daily / weekly/ monthly)
+        if isinstance(size, str) and size in self.URL["special_url"]:
+            url += self.URL["special_url"][size]
+
+        # Handle regular numeric puzzles
+        elif str(size).isnumeric():
+            url += self.URL["size_url"][int(size)][difficulty]
+        
+        # Invalid puzzle type
         else:
-            if size.isnumeric():
-                url += self.URL["size_url"][int(size)][difficulty]
-            else:
-                url += self.URL["size_url"][size]
+            raise ValueError(f"Invalid puzzle size: {size}")
+        
+        # Open the puzzle URL
         self._driver.get(url)
 
         # Specific puzzles
-        if id is not None:
-            if size.isnumeric():
-                # Input puzzle attributes and click button
-                self._wait(By.ID, "specid", TIMEOUT).send_keys(id)
-                Select(self._wait(By.ID, "size", TIMEOUT)).select_by_value(self.URL["size_url"][int(size)][difficulty][-1])
-                self._wait(By.XPATH, "//*[@id='pageContent']/div[2]/div[2]/form[1]/table/tbody/tr[3]/td[2]/input",
-                           TIMEOUT).click()
-            else:
-                select_element = Select(self._wait(By.NAME, "date", TIMEOUT))
-                # Open puzzle only when the specified id exists
-                if id in [option.get_attribute("value") for option in select_element.options]:
-                    select_element.select_by_value(id)
-                    self._wait(By.NAME, "specific", TIMEOUT).click()
-                else:
-                    return None, None
+        # if id is not None:
+        #     if size.isnumeric():
+        #         # Input puzzle attributes and click button
+        #         self._wait(By.ID, "puzzleID", TIMEOUT).send_keys(id)
+        #         Select(self._wait(By.ID, "size", TIMEOUT)).select_by_value(
+        #             self.URL["size_url"][int(size)][difficulty][-1]
+        #             )
+        #         self._wait(
+        #             By.XPATH, 
+        #             "//*[@id='pageContent']/div[2]/div[2]/form[1]/table/tbody/tr[3]/td[2]/input",
+        #             TIMEOUT
+        #         ).click()
+        #     else:
+        #         select_element = Select(self._wait(By.NAME, "date", TIMEOUT))
+        #         # Open puzzle only when the specified id exists
+        #         if id in [option.get_attribute("value") for option in select_element.options]:
+        #             select_element.select_by_value(id)
+        #             self._wait(By.NAME, "specific", TIMEOUT).click()
+        #         else:
+        #             return None, None
 
         # Get puzzle ID #
-        if size.isnumeric():
+        if str(size).isnumeric():
             id = self._wait(By.ID, "puzzleID", TIMEOUT).text
         else:
             id = Select(self._wait(By.NAME, "date", TIMEOUT)).first_selected_option.get_attribute("value")
 
-
+        # Wait until all puzzle cells are loaded
         WebDriverWait(self._driver, 20).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".task-cell, .cell"))
         )
@@ -194,10 +203,15 @@ class WebInteractor:
         EMPTY_CELL = -1
         WHITE_CELL = 0
         BLACK_CELL = 1
-        # TODO: implement daily, weekly, monthly puzzle input and output
-        special= {"daily": 30,"weekly": 30,"monthly":40}
+        special= {
+            "daily": 24,    # daily: 24x24
+            "weekly": 30,   # weekly: 30x30
+            "monthly": 40   # monthly: 30x40
+        }
 
-        if not size.isnumeric():
+        # adjust size
+        # if not size.isnumeric():
+        if isinstance(size, str) and size in special:
             size = special[size]
         else:
             size = int(size)
@@ -211,13 +225,10 @@ class WebInteractor:
             tileClass = tile.get_attribute("class").strip()
 
             if "cell-0" in tileClass:
-                # putih
                 row.append(WHITE_CELL)
             elif "cell-1" in tileClass:
-                # hitam
                 row.append(BLACK_CELL)
             else:
-                # kosong
                 row.append(EMPTY_CELL)
 
             if i == size - 1:
