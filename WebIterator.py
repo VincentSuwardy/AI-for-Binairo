@@ -239,6 +239,7 @@ class WebInteractor:
                 i += 1
 
         # debug print
+        print("ID:", id)
         print("Board:")
         for r in board:
             print(" ".join(str(x) for x in r))
