@@ -36,15 +36,14 @@ def pad_board(board, target_rows=40, target_cols=40, pad_value=-1):
     return new_board
 
 '''
-    trim the -2 from the expand method
+    trim the expanded tiles from the board
 '''
 def trim_board(board, real_rows=40, real_cols=30):
     trimmed = []
     for r in range(real_rows):
         row = []
         for c in range(real_cols):
-            if board[r][c] != -2:
-                row.append(board[r][c])
+            row.append(board[r][c])
         trimmed.append(row)
     return trimmed
 
