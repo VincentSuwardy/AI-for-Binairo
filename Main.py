@@ -7,7 +7,7 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "8"
+PUZZLE_SIZE = "weekly"
 PUZZLE_DIFF = "easy"
 
 '''
@@ -46,7 +46,10 @@ def main():
 
     # define puzzle config
     size = PUZZLE_SIZE
-    difficulty = PUZZLE_DIFF
+    if PUZZLE_SIZE is ["daily", "weekly", "monthly"]:
+        difficulty = None
+    else:
+        difficulty = PUZZLE_DIFF
 
     # retrieve puzzle from the web
     id, board = iterator.open_puzzle(size, difficulty)
