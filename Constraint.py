@@ -30,8 +30,11 @@ def apply_constraints(board):
         changed |= pattern_3(board)
         changed |= pattern_4(board)
         changed |= pattern_5(board)
-        # changed |= pattern_6(board)
-        # changed |= pattern_7(board)
+        changed |= pattern_6(board)
+        changed |= pattern_7(board)
+        changed |= pattern_8(board)
+        changed |= pattern_9(board)
+        changed |= pattern_10(board)
 
     return board
 
@@ -520,25 +523,275 @@ def pattern_6(board):
     return changed
 
 '''
-    Pattern 7:
-    
+    Pattern 7: specific case only
+    6-cell pattern with 1:2 remaining ratio
+
+    find sequences with the pattern A _ B _ _ A
+    where:
+        - A and B are opposite colors
+        - Remaining counts: A = 1, B = 2
+
+    then fill it as: A B B A B A
 '''
 def pattern_7(board):
     size = len(board)
+    half = size // 2
     changed = False
 
-    # TODO: implement algorithm
-    
+    # check rows
+    for r in range(size):
+        row = board[r]
+
+        count_white = row.count(WHITE)
+        count_black = row.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        for c in range(size - 5):
+            seg = row[c:c+6]
+
+            # match pattern A _ B _ _ A
+            if (seg[0] in (WHITE, BLACK) and seg[1] == EMPTY and
+                seg[2] in (WHITE, BLACK) and seg[3] == EMPTY and
+                seg[4] == EMPTY and seg[5] == seg[0] and seg[0] != seg[2]):
+
+                A, B = seg[0], seg[2]
+
+                # check remaining ratio 1:2
+                if ((A == WHITE and white_left == 1) or (A == BLACK and black_left == 1)):
+                    if ((B == WHITE and white_left == 2) or (B == BLACK and black_left == 2)):
+                        new_seg = [A, B, B, A, B, A]
+                        for i in range(6):
+                            if row[c+i] != new_seg[i]:
+                                old = row[c+i]
+                                row[c+i] = new_seg[i]
+                                print(f"[pattern_7] Row {r} col {c+i} changed {color_name(old)} -> {color_name(new_seg[i])}")
+                                changed = True
+
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+
+        count_white = col.count(WHITE)
+        count_black = col.count(BLACK)
+        white_left = half - count_white
+        black_left = half - count_black
+
+        for r in range(size - 5):
+            seg = col[r:r+6]
+
+            if (seg[0] in (WHITE, BLACK) and seg[1] == EMPTY and
+                seg[2] in (WHITE, BLACK) and seg[3] == EMPTY and
+                seg[4] == EMPTY and seg[5] == seg[0] and seg[0] != seg[2]):
+
+                A, B = seg[0], seg[2]
+
+                if ((A == WHITE and white_left == 1) or (A == BLACK and black_left == 1)):
+                    if ((B == WHITE and white_left == 2) or (B == BLACK and black_left == 2)):
+                        new_seg = [A, B, B, A, B, A]
+                        for i in range(6):
+                            if board[r+i][c] != new_seg[i]:
+                                old = board[r+i][c]
+                                board[r+i][c] = new_seg[i]
+                                print(f"[pattern_7] Col {c} row {r+i} changed {color_name(old)} -> {color_name(new_seg[i])}")
+                                changed = True
+
     return changed
 
+
 '''
-    Pattern 8:
-    
+    Pattern 8: specific case only
+    5-cell pattern with 1 remaining color
+
+    if only one color (A) has 1 piece left,
+    and the opposite color (B) still has more than 1 piece,
+    find sequences with the pattern:
+
+        A _ _ _ A
+
+    then fill the center cell with the opposite color (B):
+
+        A _ B _ A
 '''
 def pattern_8(board):
     size = len(board)
     changed = False
 
-    # TODO: implement algorithm
+    half = size // 2
+
+    for is_row in [True, False]:  # check both rows and columns
+        for idx in range(size):
+            line = board[idx] if is_row else [board[r][idx] for r in range(size)]
+
+            # count remaining pieces
+            count_white = line.count(WHITE)
+            count_black = line.count(BLACK)
+            white_left = half - count_white
+            black_left = half - count_black
+
+            # only proceed if one color has exactly 1 left
+            if (white_left == 1 and black_left > 1) or (black_left == 1 and white_left > 1):
+                target = WHITE if white_left == 1 else BLACK  # A
+                opposite = BLACK if target == WHITE else WHITE  # B
+
+                # scan 5-cell windows: A _ _ _ A
+                for i in range(size - 4):
+                    segment = line[i:i+5]
+                    if segment[0] == target and segment[4] == target and segment[1] == EMPTY and segment[2] == EMPTY and segment[3] == EMPTY:
+                        # fill the center (index +2)
+                        line[i+2] = opposite
+                        changed = True
+
+            # write back to board
+            if changed:
+                if is_row:
+                    board[idx] = line
+                else:
+                    for r in range(size):
+                        board[r][idx] = line[r]
+
+    return changed
+
+'''
+    Pattern 9: specific case only
+    bridging constraint to avoid triple
     
+    find sequence:
+        B A _ _ B A
+    or reversed:
+        A B _ _ A B
+    where:
+        - color A has 1 piece left
+        - color B has more than 1 piece left
+    
+    fill as:
+        B A A B A
+        or
+        A B B A B
+'''
+def pattern_9(board):
+    size = len(board)
+    changed = False
+    half = size // 2
+
+    for is_row in [True, False]:  # scan rows & columns
+        for idx in range(size):
+            line = board[idx] if is_row else [board[r][idx] for r in range(size)]
+
+            count_white = line.count(WHITE)
+            count_black = line.count(BLACK)
+            white_left = half - count_white
+            black_left = half - count_black
+
+            # only process if one color left is 1
+            if (white_left == 1 and black_left > 1) or (black_left == 1 and white_left > 1):
+                A = WHITE if white_left == 1 else BLACK
+                B = BLACK if A == WHITE else WHITE
+
+                for i in range(size - 5):
+                    segment = line[i:i+6]
+
+                    # case 1: B A _ _ B A
+                    if (
+                        segment[0] == B and
+                        segment[1] == A and
+                        segment[2] == EMPTY and
+                        segment[3] == EMPTY and
+                        segment[4] == B and
+                        segment[5] == A
+                    ):
+                        # fill middle with A
+                        line[i+2] = A
+                        changed = True
+
+                    # case 2: A B _ _ A B (reversed)
+                    elif (
+                        segment[0] == A and
+                        segment[1] == B and
+                        segment[2] == EMPTY and
+                        segment[3] == EMPTY and
+                        segment[4] == A and
+                        segment[5] == B
+                    ):
+                        line[i+2] = B
+                        changed = True
+
+            if changed:
+                if is_row:
+                    board[idx] = line
+                else:
+                    for r in range(size):
+                        board[r][idx] = line[r]
+
+    return changed
+
+'''
+    Pattern 10: specific case only
+    6-cell pattern with 1:3 remaining ratio (mixed gap)
+
+    find sequences:
+        A _ _ _ _ B
+    where:
+        - A and B are opposite colors
+        - remaining counts ratio = 1:3
+        - color with 3 remaining pieces fills 3 of the 4 cells
+        - color with 1 remaining piece fills the remaining one
+'''
+def pattern_10(board):
+    size = len(board)
+    changed = False
+    half = size // 2
+
+    for is_row in [True, False]:
+        for idx in range(size):
+            line = board[idx] if is_row else [board[r][idx] for r in range(size)]
+
+            count_white = line.count(WHITE)
+            count_black = line.count(BLACK)
+            white_left = half - count_white
+            black_left = half - count_black
+
+            # must be a 1:3 ratio
+            if sorted([white_left, black_left]) != [1, 3]:
+                continue
+
+            A = WHITE if white_left == 1 else BLACK
+            B = BLACK if A == WHITE else WHITE
+
+            for i in range(size - 5):
+                segment = line[i:i+6]
+
+                # pattern: A _ _ _ _ B  (A and B are different)
+                if (
+                    segment[0] == A and
+                    segment[5] == B and
+                    all(cell == EMPTY for cell in segment[1:5])
+                ):
+                    # fill pattern A B B A B
+                    line[i+1] = B
+                    line[i+2] = B
+                    line[i+3] = A
+                    line[i+4] = B
+                    changed = True
+
+                # reversed pattern: B _ _ _ _ A
+                elif (
+                    segment[0] == B and
+                    segment[5] == A and
+                    all(cell == EMPTY for cell in segment[1:5])
+                ):
+                    # fill pattern B A A B A
+                    line[i+1] = A
+                    line[i+2] = A
+                    line[i+3] = B
+                    line[i+4] = A
+                    changed = True
+
+            if changed:
+                if is_row:
+                    board[idx] = line
+                else:
+                    for r in range(size):
+                        board[r][idx] = line[r]
+
     return changed

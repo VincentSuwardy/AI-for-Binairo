@@ -198,7 +198,7 @@ class WebInteractor:
         special= {
             "daily": 24,    # daily: 24x24
             "weekly": 30,   # weekly: 30x30
-            "monthly": 40   # monthly: 30x40
+            "monthly": 30   # monthly: 30x40
         }
 
         # adjust size
@@ -254,7 +254,7 @@ class WebInteractor:
         # Ensure the folder is there
         os.makedirs(os.path.dirname(path), exist_ok=True)
         
-        file = open(path, "x")
+        file = open(path, "w")
         file.writelines(data)
         file.close()
 

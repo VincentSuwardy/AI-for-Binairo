@@ -7,8 +7,8 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "8"
-PUZZLE_DIFF = "easy"
+PUZZLE_SIZE = "10"
+PUZZLE_DIFF = "hard"
 
 '''
     Represent the final solved answer of a puzzle.
@@ -46,7 +46,7 @@ def main():
 
     # define puzzle config
     size = PUZZLE_SIZE
-    if PUZZLE_SIZE is ["daily", "weekly", "monthly"]:
+    if PUZZLE_SIZE in ["daily", "weekly", "monthly"]:
         difficulty = None
     else:
         difficulty = PUZZLE_DIFF
