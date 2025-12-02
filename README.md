@@ -18,7 +18,7 @@ Binairo dimainkan pada papan berbentuk persegi panjang dengan ukuran yang bervar
 ## Struktur Program
 
 - **Main.py**: file utama yang dijalankan untuk memulai proses pengambilan puzzle dari website, menerapkan _preprocessing_ dengan pola yang sudah didefinisikan, dan menjalankan solver untuk menyelesaikan puzzle.
-- **WebIterator.py**: perangkat lunak yang sebelumnya telah dikembangkan oleh _Edo Farrell Haryanto_, dengan sedikit penyesuaian agar bisa digunakan untuk website Binairo.
+- **WebIteractor.py**: perangkat lunak yang sebelumnya telah dikembangkan oleh _Edo Farrell Haryanto_, dengan sedikit penyesuaian agar bisa digunakan untuk website Binairo.
 - **Constraint.py**: berisi pola-pola (_patterns_) yang akan digunakan untuk _pre-filling_ atau _preprocessing_ puzzle sebelum diselesaikan oleh solver.
 
 ## Cara Menjalankan
