@@ -1,5 +1,5 @@
 import sys
-from WebIteractor import WebInteractor, URL
+from WebInteractor import WebInteractor, URL
 from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
 
 '''
@@ -51,7 +51,7 @@ def trim_board(board, real_rows=40, real_cols=30):
     Main program for solving and submitting.
 
     Steps:
-        1. Initialize the web iterator.
+        1. Initialize the web interactor.
         2. Retrieve a puzzle from the web.
         3. Apply constraint-based rules solving rules.
         4. Apply all constraint patterns.
