@@ -7,7 +7,7 @@ from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "monthly"
+PUZZLE_SIZE = "8"
 PUZZLE_DIFF = "hard"
 
 '''

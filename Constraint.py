@@ -73,14 +73,14 @@ def pattern_1(board):
                 if row[c] == EMPTY:
                     old = row[c]
                     row[c] = BLACK
-                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> BLACK")
+                    print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> BLACK")
                     changed = True
         elif row.count(BLACK) == half:
             for c in range(size):
                 if row[c] == EMPTY:
                     old = row[c]
                     row[c] = WHITE
-                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> WHITE")
+                    print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> WHITE")
                     changed = True
     
     # check columns
@@ -91,14 +91,14 @@ def pattern_1(board):
                 if board[r][c] == EMPTY:
                     old = board[r][c]
                     board[r][c] = BLACK
-                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> BLACK")
+                    print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> BLACK")
                     changed = True
         elif col.count(BLACK) == half:
             for r in range(size):
                 if board[r][c] == EMPTY:
                     old = board[r][c]
                     board[r][c] = WHITE
-                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> WHITE")
+                    print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> WHITE")
                     changed = True
 
     return changed
@@ -125,14 +125,14 @@ def pattern_2a(board):
             if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
                 old = board[r][c+2]
                 board[r][c+2] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_1] Row {r} col {c+2} changed {color_name(old)} -> {color_name(board[r][c+2])}")
+                print(f"[pattern_2a] Row {r} col {c+2} changed {color_name(old)} -> {color_name(board[r][c+2])}")
                 changed = True
 
             # If two same colors preceded by an empty cell
             if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
                 old = board[r][c]
                 board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
+                print(f"[pattern_2a] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
                 changed = True
 
     # check columns
@@ -143,12 +143,12 @@ def pattern_2a(board):
             if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
                 old = board[r+2][c]
                 board[r+2][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_1] Col {c} row {r+2} changed {color_name(old)} -> {color_name(board[r+2][c])}")
+                print(f"[pattern_2a] Col {c} row {r+2} changed {color_name(old)} -> {color_name(board[r+2][c])}")
                 changed = True
             if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
                 old = board[r][c]
                 board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                print(f"[pattern_2a] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
                 changed = True
 
     return changed
@@ -173,7 +173,7 @@ def pattern_2b(board):
             if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
                 old = board[r][c+1]
                 board[r][c+1] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2] Row {r} col {c+1} changed {color_name(old)} -> {color_name(board[r][c+1])}")
+                print(f"[pattern_2b] Row {r} col {c+1} changed {color_name(old)} -> {color_name(board[r][c+1])}")
                 changed = True
 
     # check columns
@@ -183,7 +183,7 @@ def pattern_2b(board):
             if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
                 old = board[r+1][c]
                 board[r+1][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2] Col {c} row {r+1} changed {color_name(old)} -> {color_name(board[r+1][c])}")
+                print(f"[pattern_2b] Col {c} row {r+1} changed {color_name(old)} -> {color_name(board[r+1][c])}")
                 changed = True
 
     return changed
@@ -238,7 +238,7 @@ def pattern_3(board):
             if row[c] == EMPTY and ref_row[c] == (BLACK if target_color == WHITE else WHITE):
                     old = row[c]
                     row[c] = target_color
-                    print(f"[pattern_0] Row {r} col {c} changed {color_name(old)} -> {color_name(row[c])}")
+                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> {color_name(row[c])}")
                     changed = True
 
     # check columns
@@ -277,7 +277,7 @@ def pattern_3(board):
                 if board[r][c] == EMPTY and ref_col[r] == (BLACK if target_color == WHITE else WHITE):
                     old = board[r][c]
                     board[r][c] = target_color
-                    print(f"[pattern_0] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
                     changed = True
 
 
