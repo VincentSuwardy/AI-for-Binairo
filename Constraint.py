@@ -24,11 +24,11 @@ def apply_constraints(board, difficulty):
 
         # apply rules
         changed |= pattern_1(board)
-        changed |= pattern_2(board)
-        changed |= pattern_3(board)
+        changed |= pattern_2a(board)
+        changed |= pattern_2b(board)
 
         if difficulty in ["hard", None]:
-            changed |= pattern_0(board)
+            changed |= pattern_3(board)
             changed |= pattern_4(board)
             changed |= pattern_5(board)
             changed |= pattern_6(board)
@@ -57,11 +57,144 @@ def fill_random(board):
 
 # game patterns
 '''
-    Pattern 0:
+    Pattern 1: Color Balancing
+    Each row and column must contain an equal number of black and white tiles. Automatically fill the rest when one color reaches half of the row/column.
+'''
+def pattern_2a(board):
+    size = len(board)
+    changed = False
+    half = size // 2
+
+    # check rows
+    for r in range(size):
+        row = board[r]
+        if row.count(WHITE) == half:
+            for c in range(size):
+                if row[c] == EMPTY:
+                    old = row[c]
+                    row[c] = BLACK
+                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> BLACK")
+                    changed = True
+        elif row.count(BLACK) == half:
+            for c in range(size):
+                if row[c] == EMPTY:
+                    old = row[c]
+                    row[c] = WHITE
+                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> WHITE")
+                    changed = True
+    
+    # check columns
+    for c in range(size):
+        col = [board[r][c] for r in range(size)]
+        if col.count(WHITE) == half:
+            for r in range(size):
+                if board[r][c] == EMPTY:
+                    old = board[r][c]
+                    board[r][c] = BLACK
+                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> BLACK")
+                    changed = True
+        elif col.count(BLACK) == half:
+            for r in range(size):
+                if board[r][c] == EMPTY:
+                    old = board[r][c]
+                    board[r][c] = WHITE
+                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> WHITE")
+                    changed = True
+
+    return changed
+
+
+'''
+    Pattern 2a: Three Adjacent
+    - No three consecutive cells can have the same color.
+    - Close open ends of two consecutive identical tiles.
+
+    Example:
+    _ 0 0 _  →  1 0 0 1
+'''
+def pattern_2a(board):
+    size = len(board)
+    changed = False
+
+    # check rows
+    for r in range(size):
+        for c in range(size-2):
+            triple = board[r][c:c+3]
+
+            # If two same colors followed by an empty cell
+            if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
+                old = board[r][c+2]
+                board[r][c+2] = WHITE if triple[0] == BLACK else BLACK
+                print(f"[pattern_1] Row {r} col {c+2} changed {color_name(old)} -> {color_name(board[r][c+2])}")
+                changed = True
+
+            # If two same colors preceded by an empty cell
+            if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
+                old = board[r][c]
+                board[r][c] = WHITE if triple[1] == BLACK else BLACK
+                print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
+                changed = True
+
+    # check columns
+    for c in range(size):
+        for r in range(size - 2):
+            triple = [board[r+i][c] for i in range(3)]
+
+            if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
+                old = board[r+2][c]
+                board[r+2][c] = WHITE if triple[0] == BLACK else BLACK
+                print(f"[pattern_1] Col {c} row {r+2} changed {color_name(old)} -> {color_name(board[r+2][c])}")
+                changed = True
+            if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
+                old = board[r][c]
+                board[r][c] = WHITE if triple[1] == BLACK else BLACK
+                print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                changed = True
+
+    return changed
+
+
+'''
+    Pattern 2b: Three Adjacent
+    - No three cells with the same color, even with one gap.
+    - If two identical tiles are separated by one empty cell, fill the middle with the opposite color.
+
+    Example:
+    0 _ 0  →  0 1 0
+'''
+def pattern_2b(board):
+    size = len(board)
+    changed = False
+
+    # check rows
+    for r in range(size):
+        for c in range(size - 2):
+            triple = board[r][c:c+3]
+            if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
+                old = board[r][c+1]
+                board[r][c+1] = WHITE if triple[0] == BLACK else BLACK
+                print(f"[pattern_2] Row {r} col {c+1} changed {color_name(old)} -> {color_name(board[r][c+1])}")
+                changed = True
+
+    # check columns
+    for c in range(size):
+        for r in range(size - 2):
+            triple = [board[r+i][c] for i in range(3)]
+            if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
+                old = board[r+1][c]
+                board[r+1][c] = WHITE if triple[0] == BLACK else BLACK
+                print(f"[pattern_2] Col {c} row {r+1} changed {color_name(old)} -> {color_name(board[r+1][c])}")
+                changed = True
+
+    return changed
+
+
+'''
+    Pattern 3: Uniqueness
     - Each row and column must be unique.
     - No two rows or columns can be identical.
 '''
-def pattern_0(board):
+def pattern_3(board):
     size = len(board)
     changed = False
     half = size // 2
@@ -152,139 +285,7 @@ def pattern_0(board):
 
 
 '''
-    Pattern 1:
-    - No three consecutive cells can have the same color.
-    - Close open ends of two consecutive identical tiles.
-
-    Example:
-    _ 0 0 _  →  1 0 0 1
-'''
-def pattern_1(board):
-    size = len(board)
-    changed = False
-
-    # check rows
-    for r in range(size):
-        for c in range(size-2):
-            triple = board[r][c:c+3]
-
-            # If two same colors followed by an empty cell
-            if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
-                old = board[r][c+2]
-                board[r][c+2] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_1] Row {r} col {c+2} changed {color_name(old)} -> {color_name(board[r][c+2])}")
-                changed = True
-
-            # If two same colors preceded by an empty cell
-            if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
-                old = board[r][c]
-                board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
-                changed = True
-
-    # check columns
-    for c in range(size):
-        for r in range(size - 2):
-            triple = [board[r+i][c] for i in range(3)]
-
-            if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
-                old = board[r+2][c]
-                board[r+2][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_1] Col {c} row {r+2} changed {color_name(old)} -> {color_name(board[r+2][c])}")
-                changed = True
-            if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
-                old = board[r][c]
-                board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
-                changed = True
-
-    return changed
-
-
-'''
-    Pattern 2:
-    - No three cells with the same color, even with one gap.
-    - If two identical tiles are separated by one empty cell, fill the middle with the opposite color.
-
-    Example:
-    0 _ 0  →  0 1 0
-'''
-def pattern_2(board):
-    size = len(board)
-    changed = False
-
-    # check rows
-    for r in range(size):
-        for c in range(size - 2):
-            triple = board[r][c:c+3]
-            if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
-                old = board[r][c+1]
-                board[r][c+1] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2] Row {r} col {c+1} changed {color_name(old)} -> {color_name(board[r][c+1])}")
-                changed = True
-
-    # check columns
-    for c in range(size):
-        for r in range(size - 2):
-            triple = [board[r+i][c] for i in range(3)]
-            if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
-                old = board[r+1][c]
-                board[r+1][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2] Col {c} row {r+1} changed {color_name(old)} -> {color_name(board[r+1][c])}")
-                changed = True
-
-    return changed
-
-
-'''
-    Pattern 3:
-    Each row and column must contain an equal number of black and white tiles. Automatically fill the rest when one color reaches half of the row/column.
-'''
-def pattern_3(board):
-    size = len(board)
-    changed = False
-    half = size // 2
-
-    # check rows
-    for r in range(size):
-        row = board[r]
-        if row.count(WHITE) == half:
-            for c in range(size):
-                if row[c] == EMPTY:
-                    old = row[c]
-                    row[c] = BLACK
-                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> BLACK")
-                    changed = True
-        elif row.count(BLACK) == half:
-            for c in range(size):
-                if row[c] == EMPTY:
-                    old = row[c]
-                    row[c] = WHITE
-                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> WHITE")
-                    changed = True
-    
-    # check columns
-    for c in range(size):
-        col = [board[r][c] for r in range(size)]
-        if col.count(WHITE) == half:
-            for r in range(size):
-                if board[r][c] == EMPTY:
-                    old = board[r][c]
-                    board[r][c] = BLACK
-                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> BLACK")
-                    changed = True
-        elif col.count(BLACK) == half:
-            for r in range(size):
-                if board[r][c] == EMPTY:
-                    old = board[r][c]
-                    board[r][c] = WHITE
-                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> WHITE")
-                    changed = True
-
-    return changed
-
-'''
-    Pattern 4: specific case only
+    Pattern 4: Absolute One
     check if one color has only 1 piece left, then fill the rest with the opposite color
 
     1 _ _ 1 _ 0 1 1 0 1 1 0 (1 _ 0 _ 1) _ _ 1 
@@ -370,8 +371,9 @@ def pattern_4(board):
     
     return changed
 
+
 '''
-    Pattern 5: specific case only
+    Pattern 5: A Third Balance Filling
     check if the remaining pieces have a 1:3 ratio
 
     find 4 adjacent EMPTY cells
@@ -447,7 +449,7 @@ def pattern_5(board):
 
 
 '''
-    Pattern 6: specific case only
+    Pattern 6: Central Forced Placement
     check if there's a color (in this case 0) with only 1 left to put
 
     0 (_ _ _) 0 _ 1 0 0 1 1 0 0 1 1 0 0 1 1 0
@@ -523,8 +525,9 @@ def pattern_6(board):
     
     return changed
 
+
 '''
-    Pattern 7: specific case only
+    Pattern 7: Symmetric Six Pattern
     6-cell pattern with 1:2 remaining ratio
 
     find sequences with the pattern A _ B _ _ A
@@ -601,7 +604,7 @@ def pattern_7(board):
 
 
 '''
-    Pattern 8: specific case only
+    Pattern 8: Double-Anchor Rule
     5-cell pattern with 1 remaining color
 
     if only one color (A) has 1 piece left,
@@ -653,8 +656,9 @@ def pattern_8(board):
 
     return changed
 
+
 '''
-    Pattern 9: specific case only
+    Pattern 9: Single-Bridge Pattern
     bridging constraint to avoid triple
     
     find sequence:
@@ -726,8 +730,9 @@ def pattern_9(board):
 
     return changed
 
+
 '''
-    Pattern 10: specific case only
+    Pattern 10: Directional Majority Pattern
     6-cell pattern with 1:3 remaining ratio (mixed gap)
 
     find sequences:
