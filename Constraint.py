@@ -60,7 +60,7 @@ def fill_random(board):
     Pattern 1: Color Balancing
     Each row and column must contain an equal number of black and white tiles. Automatically fill the rest when one color reaches half of the row/column.
 '''
-def pattern_2a(board):
+def pattern_1(board):
     size = len(board)
     changed = False
     half = size // 2
