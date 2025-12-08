@@ -10,6 +10,10 @@ def color_name(value):
         return "BLACK"
     else:
         return "EMPTY"
+    
+# DEBUG HELPER
+def debug_change(pattern, r, c, old, new):
+    print(f"[{pattern}] Row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
 
 '''
     Apply constraint patterns to the puzzle board.
@@ -52,7 +56,7 @@ def fill_random(board):
             if board[r][c] == EMPTY:
                 old = board[r][c]
                 board[r][c] = random.choice([WHITE, BLACK])
-                print(f"[fill_rand] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
+                debug_change("fill_random", r, c, old, board[r][c])
     return board
 
 # game patterns
@@ -73,14 +77,14 @@ def pattern_1(board):
                 if row[c] == EMPTY:
                     old = row[c]
                     row[c] = BLACK
-                    print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> BLACK")
+                    debug_change("pattern_1", r, c, old, row[c])
                     changed = True
         elif row.count(BLACK) == half:
             for c in range(size):
                 if row[c] == EMPTY:
                     old = row[c]
                     row[c] = WHITE
-                    print(f"[pattern_1] Row {r} col {c} changed {color_name(old)} -> WHITE")
+                    debug_change("pattern_1", r, c, old, row[c])
                     changed = True
     
     # check columns
@@ -91,14 +95,14 @@ def pattern_1(board):
                 if board[r][c] == EMPTY:
                     old = board[r][c]
                     board[r][c] = BLACK
-                    print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> BLACK")
+                    debug_change("pattern_1", r, c, old, board[r][c])
                     changed = True
         elif col.count(BLACK) == half:
             for r in range(size):
                 if board[r][c] == EMPTY:
                     old = board[r][c]
                     board[r][c] = WHITE
-                    print(f"[pattern_1] Col {c} row {r} changed {color_name(old)} -> WHITE")
+                    debug_change("pattern_1", r, c, old, board[r][c])
                     changed = True
 
     return changed
@@ -125,14 +129,14 @@ def pattern_2a(board):
             if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
                 old = board[r][c+2]
                 board[r][c+2] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2a] Row {r} col {c+2} changed {color_name(old)} -> {color_name(board[r][c+2])}")
+                debug_change("pattern_2a", r, c+2, old, board[r][c+2])
                 changed = True
 
             # If two same colors preceded by an empty cell
             if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
                 old = board[r][c]
                 board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_2a] Row {r} col {c} changed {color_name(old)} -> {color_name(board[r][c])}")
+                debug_change("pattern_2a", r, c, old, board[r][c])
                 changed = True
 
     # check columns
@@ -143,12 +147,12 @@ def pattern_2a(board):
             if triple[0] == triple[1] != EMPTY and triple[2] == EMPTY:
                 old = board[r+2][c]
                 board[r+2][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2a] Col {c} row {r+2} changed {color_name(old)} -> {color_name(board[r+2][c])}")
+                debug_change("pattern_2a", r+2, c, old, board[r+2][c])
                 changed = True
             if triple[1] == triple[2] != EMPTY and triple[0] == EMPTY:
                 old = board[r][c]
                 board[r][c] = WHITE if triple[1] == BLACK else BLACK
-                print(f"[pattern_2a] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                debug_change("pattern_2a", r, c, old, board[r][c])
                 changed = True
 
     return changed
@@ -173,7 +177,7 @@ def pattern_2b(board):
             if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
                 old = board[r][c+1]
                 board[r][c+1] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2b] Row {r} col {c+1} changed {color_name(old)} -> {color_name(board[r][c+1])}")
+                debug_change("pattern_2b", r, c+1, old, board[r][c+1])
                 changed = True
 
     # check columns
@@ -183,7 +187,7 @@ def pattern_2b(board):
             if triple[0] == triple[2] != EMPTY and triple[1] == EMPTY:
                 old = board[r+1][c]
                 board[r+1][c] = WHITE if triple[0] == BLACK else BLACK
-                print(f"[pattern_2b] Col {c} row {r+1} changed {color_name(old)} -> {color_name(board[r+1][c])}")
+                debug_change("pattern_2b", r+1, c, old, board[r+1][c])
                 changed = True
 
     return changed
@@ -238,7 +242,7 @@ def pattern_3(board):
             if row[c] == EMPTY and ref_row[c] == (BLACK if target_color == WHITE else WHITE):
                     old = row[c]
                     row[c] = target_color
-                    print(f"[pattern_3] Row {r} col {c} changed {color_name(old)} -> {color_name(row[c])}")
+                    debug_change("pattern_3", r, c, old, row[c])
                     changed = True
 
     # check columns
@@ -277,7 +281,7 @@ def pattern_3(board):
                 if board[r][c] == EMPTY and ref_col[r] == (BLACK if target_color == WHITE else WHITE):
                     old = board[r][c]
                     board[r][c] = target_color
-                    print(f"[pattern_3] Col {c} row {r} changed {color_name(old)} -> {color_name(board[r][c])}")
+                    debug_change("pattern_3", r, c, old, board[r][c])
                     changed = True
 
 
@@ -303,9 +307,9 @@ def pattern_4(board):
                 line[i] = fill_color
                 changed = True
                 if is_row:
-                    print(f"[pattern_4] Row {r} col {i} changed {color_name(old)} -> {color_name(fill_color)}")
+                    debug_change("pattern_4", r, i, old, fill_color)
                 else:
-                    print(f"[pattern_4] Col {r} row {i} changed {color_name(old)} -> {color_name(fill_color)}")
+                    debug_change("pattern_4", i, r, old, fill_color)
 
     # check rows
     for r in range(size):
@@ -406,13 +410,13 @@ def pattern_5(board):
                     if row[i] == EMPTY:
                         old = row[i]
                         row[i] = color3
-                        print(f"[pattern_5] Row {r} col {i} changed {color_name(old)} -> {color_name(color3)}")
+                        debug_change("pattern_5", r, i, old, row[i])
                         changed = True
                     # fill right edge
                     if row[i + 3] == EMPTY:
                         old = row[i + 3]
                         row[i + 3] = color3
-                        print(f"[pattern_5] Row {r} col {i+3} changed {color_name(old)} -> {color_name(color3)}")
+                        debug_change("pattern_5", r, i+3, old, row[i+3])
                         changed = True
 
     # check columns
@@ -432,13 +436,13 @@ def pattern_5(board):
                     if col[i] == EMPTY:
                         old = col[i]
                         col[i] = color3
-                        print(f"[pattern_5] Col {c} row {i} changed {color_name(old)} -> {color_name(color3)}")
+                        debug_change("pattern_5", i, c, old, col[i])
                         changed = True
                     # fill bottom egde
                     if col[i + 3] == EMPTY:
                         old = col[i + 3]
                         col[i + 3] = color3
-                        print(f"[pattern_5] Col {c} row {i+3} changed {color_name(old)} -> {color_name(color3)}")
+                        debug_change("pattern_5", i+3, c, old, col[i+3])
                         changed = True
 
         # rewrite to board
@@ -448,23 +452,32 @@ def pattern_5(board):
     return changed
 
 
-'''
-    Pattern 6: Central Forced Placement
-    check if there's a color (in this case 0) with only 1 left to put
-
-    0 (_ _ _) 0 _ 1 0 0 1 1 0 0 1 1 0 0 1 1 0
-
-    if there are two tiles of the same color (0) enclosing three empty cells,
-    and that color only has one tile left to place,
-    then the remaining tile must be placed in the middle of those three empty cells
- 
-    result:
-    0 _ 0 _ 0 _ 1 0 0 1 1 0 0 1 1 0 0 1 1 0
-'''
 def pattern_6(board):
+    """
+    Pattern 6: Forced Outside Fill
+    If color X has exactly 1 tile left to place in a row/column
+    and we detect a segment: X _ _ _ X
+    then:
+      - DO NOT fill the inside yet
+      - fill ALL remaining EMPTY cells OUTSIDE the segment with opposite color Y
+
+    This ensures the gap will not accidentally be filled with Y later,
+    preventing illegal configuration: X Y Y Y X
+    """
     size = len(board)
-    changed = False
     half = size // 2
+    changed = False
+
+    def outside_fill(line, idx_start, idx_end, X):
+        nonlocal changed
+        Y = WHITE if X == BLACK else BLACK
+        for i in range(size):
+            if not (idx_start <= i <= idx_end):  # strictly outside the segment
+                if line[i] == EMPTY:
+                    old = line[i]
+                    line[i] = Y
+                    changed = True
+                    debug_change("pattern_6", r_or_c, i if is_row else r_or_c, old, line[i])
 
     # check rows
     for r in range(size):
@@ -474,27 +487,15 @@ def pattern_6(board):
         white_left = half - count_white
         black_left = half - count_black
 
-        # continue if and only if there is a color with 1 count left
         if white_left == 1 or black_left == 1:
-            color_x = WHITE if white_left == 1 else BLACK
-
-            # scan every 5 cells adjacent
+            X = WHITE if white_left == 1 else BLACK
             for i in range(size - 4):
-                seg = row[i:i+5]
+                seg = row[i:i + 5]
+                if seg[0] == X and seg[4] == X and seg[1] == seg[2] == seg[3] == EMPTY:
+                    r_or_c = r  # debug index
+                    is_row = True
+                    outside_fill(row, i, i + 4, X)
 
-                # find pattern (X _ _ _ X)
-                if (
-                    seg[0] == color_x
-                    and seg[4] == color_x
-                    and seg[1] == seg[2] == seg[3] == EMPTY
-                ):
-                    # isi sel tengah (i+2)
-                    if row[i+2] == EMPTY:
-                        old = row[i+2]
-                        row[i+2] = color_x
-                        print(f"[pattern_6] Row {r} col {i+2} changed {color_name(old)} -> {color_name(color_x)}")
-                        changed = True
-    
     # check columns
     for c in range(size):
         col = [board[r][c] for r in range(size)]
@@ -504,25 +505,16 @@ def pattern_6(board):
         black_left = half - count_black
 
         if white_left == 1 or black_left == 1:
-            color_x = WHITE if white_left == 1 else BLACK
-
+            X = WHITE if white_left == 1 else BLACK
             for i in range(size - 4):
-                seg = col[i:i+5]
-                if (
-                    seg[0] == color_x
-                    and seg[4] == color_x
-                    and seg[1] == seg[2] == seg[3] == EMPTY
-                ):
-                    if col[i+2] == EMPTY:
-                        old = col[i+2]
-                        col[i+2] = color_x
-                        print(f"[pattern_6] Col {c} row {i+2} changed {color_name(old)} -> {color_name(color_x)}")
-                        changed = True
+                seg = col[i:i + 5]
+                if seg[0] == X and seg[4] == X and seg[1] == seg[2] == seg[3] == EMPTY:
+                    r_or_c = c
+                    is_row = False
+                    outside_fill(col, i, i + 4, X)
+                    for r in range(size):
+                        board[r][c] = col[r]
 
-        # rewrite to board
-        for r in range(size):
-            board[r][c] = col[r]
-    
     return changed
 
 
@@ -569,7 +561,7 @@ def pattern_7(board):
                             if row[c+i] != new_seg[i]:
                                 old = row[c+i]
                                 row[c+i] = new_seg[i]
-                                print(f"[pattern_7] Row {r} col {c+i} changed {color_name(old)} -> {color_name(new_seg[i])}")
+                                debug_change("pattern_7", r, c+i, old, row[c+i])
                                 changed = True
 
     # check columns
@@ -597,7 +589,7 @@ def pattern_7(board):
                             if board[r+i][c] != new_seg[i]:
                                 old = board[r+i][c]
                                 board[r+i][c] = new_seg[i]
-                                print(f"[pattern_7] Col {c} row {r+i} changed {color_name(old)} -> {color_name(new_seg[i])}")
+                                debug_change("pattern_7", r+i, c, old, col[r+i])
                                 changed = True
 
     return changed
@@ -643,7 +635,12 @@ def pattern_8(board):
                     segment = line[i:i+5]
                     if segment[0] == target and segment[4] == target and segment[1] == EMPTY and segment[2] == EMPTY and segment[3] == EMPTY:
                         # fill the center (index +2)
+                        old = line[i+2]
                         line[i+2] = opposite
+                        if is_row:
+                            debug_change("pattern_8", idx, i+2, old, opposite)
+                        else:
+                            debug_change("pattern_8", i+2, idx, old, opposite)
                         changed = True
 
             # write back to board
@@ -706,7 +703,12 @@ def pattern_9(board):
                         segment[5] == A
                     ):
                         # fill middle with A
+                        old = line[i+2]
                         line[i+2] = A
+                        if is_row:
+                            debug_change("pattern_9", idx, i+2, old, line[i+2])
+                        else:
+                            debug_change("pattern_9", i+2, idx, old, line[i+2])
                         changed = True
 
                     # case 2: A B _ _ A B (reversed)
@@ -718,7 +720,12 @@ def pattern_9(board):
                         segment[4] == A and
                         segment[5] == B
                     ):
+                        old = line[i+2]
                         line[i+2] = B
+                        if is_row:
+                            debug_change("pattern_9", idx, i+2, old, line[i+2])
+                        else:
+                            debug_change("pattern_9", i+2, idx, old, line[i+2])
                         changed = True
 
             if changed:
@@ -774,10 +781,11 @@ def pattern_10(board):
                     all(cell == EMPTY for cell in segment[1:5])
                 ):
                     # fill pattern A B B A B
-                    line[i+1] = B
-                    line[i+2] = B
-                    line[i+3] = A
-                    line[i+4] = B
+                    old1, old2, old3, old4 = line[i+1], line[i+2], line[i+3], line[i+4]
+                    line[i+1]=B; debug_change("pattern_10", idx if is_row else i+1, (i+1 if is_row else idx), old1, B)
+                    line[i+2]=B; debug_change("pattern_10", idx if is_row else i+2, (i+2 if is_row else idx), old2, B)
+                    line[i+3]=A; debug_change("pattern_10", idx if is_row else i+3, (i+3 if is_row else idx), old3, A)
+                    line[i+4]=B; debug_change("pattern_10", idx if is_row else i+4, (i+4 if is_row else idx), old4, B)
                     changed = True
 
                 # reversed pattern: B _ _ _ _ A
@@ -787,10 +795,11 @@ def pattern_10(board):
                     all(cell == EMPTY for cell in segment[1:5])
                 ):
                     # fill pattern B A A B A
-                    line[i+1] = A
-                    line[i+2] = A
-                    line[i+3] = B
-                    line[i+4] = A
+                    old1, old2, old3, old4 = line[i+1], line[i+2], line[i+3], line[i+4]
+                    line[i+1]=A; debug_change("pattern_10", idx if is_row else i+1, (i+1 if is_row else idx), old1, A)
+                    line[i+2]=A; debug_change("pattern_10", idx if is_row else i+2, (i+2 if is_row else idx), old2, A)
+                    line[i+3]=B; debug_change("pattern_10", idx if is_row else i+3, (i+3 if is_row else idx), old3, B)
+                    line[i+4]=A; debug_change("pattern_10", idx if is_row else i+4, (i+4 if is_row else idx), old4, A)
                     changed = True
 
             if changed:
