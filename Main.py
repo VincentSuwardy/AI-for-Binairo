@@ -1,13 +1,14 @@
 import sys
 from WebInteractor import WebInteractor, URL
 from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
+from Heuristic import solve_with_heuristic
 
 '''
     DEFINE PUZZLE CONFIG
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "daily"
+PUZZLE_SIZE = "20"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -97,7 +98,8 @@ def main():
         board = pad_board(board)
 
     # solving stage
-    board = apply_constraints(board, PUZZLE_DIFF)
+    # board = apply_constraints(board, PUZZLE_DIFF)
+    board = solve_with_heuristic(board, PUZZLE_DIFF)
     # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
 
     if size == "monthly" :
