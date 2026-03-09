@@ -1,7 +1,7 @@
 import sys
 from WebInteractor import WebInteractor, URL
 from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
-from Heuristic import solve_with_heuristic
+from Heuristic import solve_with_heuristic, solve_with_limited_heuristic
 
 '''
     DEFINE PUZZLE CONFIG
@@ -99,7 +99,9 @@ def main():
 
     # solving stage
     # board = apply_constraints(board, PUZZLE_DIFF)
-    board = solve_with_heuristic(board, PUZZLE_DIFF)
+
+    # board = solve_with_heuristic(board, PUZZLE_DIFF)
+    board = solve_with_limited_heuristic(board, PUZZLE_DIFF, 3)
     # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
 
     if size == "monthly" :
