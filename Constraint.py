@@ -38,8 +38,6 @@ def apply_constraints(board, difficulty):
             changed |= pattern_6(board)
             changed |= pattern_7(board)
             changed |= pattern_8(board)
-            changed |= pattern_9(board)
-            changed |= pattern_10(board)
 
     return board
 
@@ -519,84 +517,7 @@ def pattern_6(board):
 
 
 '''
-    Pattern 7: Symmetric Six Pattern
-    6-cell pattern with 1:2 remaining ratio
-
-    find sequences with the pattern A _ B _ _ A
-    where:
-        - A and B are opposite colors
-        - Remaining counts: A = 1, B = 2
-
-    then fill it as: A B B A B A
-'''
-def pattern_7(board):
-    size = len(board)
-    half = size // 2
-    changed = False
-
-    # check rows
-    for r in range(size):
-        row = board[r]
-
-        count_white = row.count(WHITE)
-        count_black = row.count(BLACK)
-        white_left = half - count_white
-        black_left = half - count_black
-
-        for c in range(size - 5):
-            seg = row[c:c+6]
-
-            # match pattern A _ B _ _ A
-            if (seg[0] in (WHITE, BLACK) and seg[1] == EMPTY and
-                seg[2] in (WHITE, BLACK) and seg[3] == EMPTY and
-                seg[4] == EMPTY and seg[5] == seg[0] and seg[0] != seg[2]):
-
-                A, B = seg[0], seg[2]
-
-                # check remaining ratio 1:2
-                if ((A == WHITE and white_left == 1) or (A == BLACK and black_left == 1)):
-                    if ((B == WHITE and white_left == 2) or (B == BLACK and black_left == 2)):
-                        new_seg = [A, B, B, A, B, A]
-                        for i in range(6):
-                            if row[c+i] != new_seg[i]:
-                                old = row[c+i]
-                                row[c+i] = new_seg[i]
-                                debug_change("pattern_7", r, c+i, old, row[c+i])
-                                changed = True
-
-    # check columns
-    for c in range(size):
-        col = [board[r][c] for r in range(size)]
-
-        count_white = col.count(WHITE)
-        count_black = col.count(BLACK)
-        white_left = half - count_white
-        black_left = half - count_black
-
-        for r in range(size - 5):
-            seg = col[r:r+6]
-
-            if (seg[0] in (WHITE, BLACK) and seg[1] == EMPTY and
-                seg[2] in (WHITE, BLACK) and seg[3] == EMPTY and
-                seg[4] == EMPTY and seg[5] == seg[0] and seg[0] != seg[2]):
-
-                A, B = seg[0], seg[2]
-
-                if ((A == WHITE and white_left == 1) or (A == BLACK and black_left == 1)):
-                    if ((B == WHITE and white_left == 2) or (B == BLACK and black_left == 2)):
-                        new_seg = [A, B, B, A, B, A]
-                        for i in range(6):
-                            if board[r+i][c] != new_seg[i]:
-                                old = board[r+i][c]
-                                board[r+i][c] = new_seg[i]
-                                debug_change("pattern_7", r+i, c, old, col[r+i])
-                                changed = True
-
-    return changed
-
-
-'''
-    Pattern 8: Double-Anchor Rule
+    Pattern 7: Double-Anchor Rule
     5-cell pattern with 1 remaining color
 
     if only one color (A) has 1 piece left,
@@ -609,7 +530,7 @@ def pattern_7(board):
 
         A _ B _ A
 '''
-def pattern_8(board):
+def pattern_7(board):
     size = len(board)
     changed = False
 
@@ -655,158 +576,92 @@ def pattern_8(board):
 
 
 '''
-    Pattern 9: Single-Bridge Pattern
-    bridging constraint to avoid triple
-    
-    find sequence:
-        B A _ _ B A
-    or reversed:
-        A B _ _ A B
-    where:
-        - color A has 1 piece left
-        - color B has more than 1 piece left
-    
-    fill as:
-        B A A B A
-        or
-        A B B A B
+    Pattern 8: Remaining Color Flood
+    When one color (A) has exactly 1 piece left to place in a row/column,
+    and the opposite color (B) has multiple pieces remaining.
+
+    If the number of EMPTY cells equals the remaining B pieces,
+    then almost all EMPTY cells must be filled with B.
+
+    However, we must still respect the "no three adjacent" rule.
+    If placing B would create a triple, that cell must instead be A.
+
+    This pattern effectively floods the remaining spaces with B,
+    while only placing A where necessary to prevent illegal triples.
+
+    Examples:
+
+    Middle case:
+        A _ B _ _ B A
+        remaining B = number of EMPTY
+
+        A B B A B B A
+
+    Edge case:
+        _ B _ _ B A
+        remaining B = number of EMPTY
+
+        B B A B B A
 '''
-def pattern_9(board):
+def pattern_8(board):
     size = len(board)
-    changed = False
     half = size // 2
-
-    for is_row in [True, False]:  # scan rows & columns
-        for idx in range(size):
-            line = board[idx] if is_row else [board[r][idx] for r in range(size)]
-
-            count_white = line.count(WHITE)
-            count_black = line.count(BLACK)
-            white_left = half - count_white
-            black_left = half - count_black
-
-            # only process if one color left is 1
-            if (white_left == 1 and black_left > 1) or (black_left == 1 and white_left > 1):
-                A = WHITE if white_left == 1 else BLACK
-                B = BLACK if A == WHITE else WHITE
-
-                for i in range(size - 5):
-                    segment = line[i:i+6]
-
-                    # case 1: B A _ _ B A
-                    if (
-                        segment[0] == B and
-                        segment[1] == A and
-                        segment[2] == EMPTY and
-                        segment[3] == EMPTY and
-                        segment[4] == B and
-                        segment[5] == A
-                    ):
-                        # fill middle with A
-                        old = line[i+2]
-                        line[i+2] = A
-                        if is_row:
-                            debug_change("pattern_9", idx, i+2, old, line[i+2])
-                        else:
-                            debug_change("pattern_9", i+2, idx, old, line[i+2])
-                        changed = True
-
-                    # case 2: A B _ _ A B (reversed)
-                    elif (
-                        segment[0] == A and
-                        segment[1] == B and
-                        segment[2] == EMPTY and
-                        segment[3] == EMPTY and
-                        segment[4] == A and
-                        segment[5] == B
-                    ):
-                        old = line[i+2]
-                        line[i+2] = B
-                        if is_row:
-                            debug_change("pattern_9", idx, i+2, old, line[i+2])
-                        else:
-                            debug_change("pattern_9", i+2, idx, old, line[i+2])
-                        changed = True
-
-            if changed:
-                if is_row:
-                    board[idx] = line
-                else:
-                    for r in range(size):
-                        board[r][idx] = line[r]
-
-    return changed
-
-
-'''
-    Pattern 10: Directional Majority Pattern
-    6-cell pattern with 1:3 remaining ratio (mixed gap)
-
-    find sequences:
-        A _ _ _ _ B
-    where:
-        - A and B are opposite colors
-        - remaining counts ratio = 1:3
-        - color with 3 remaining pieces fills 3 of the 4 cells
-        - color with 1 remaining piece fills the remaining one
-'''
-def pattern_10(board):
-    size = len(board)
     changed = False
-    half = size // 2
 
     for is_row in [True, False]:
         for idx in range(size):
+
             line = board[idx] if is_row else [board[r][idx] for r in range(size)]
 
             count_white = line.count(WHITE)
             count_black = line.count(BLACK)
+
             white_left = half - count_white
             black_left = half - count_black
 
-            # must be a 1:3 ratio
-            if sorted([white_left, black_left]) != [1, 3]:
+            if not ((white_left == 1 and black_left > 1) or (black_left == 1 and white_left > 1)):
                 continue
 
             A = WHITE if white_left == 1 else BLACK
             B = BLACK if A == WHITE else WHITE
+            B_left = black_left if A == WHITE else white_left
 
-            for i in range(size - 5):
-                segment = line[i:i+6]
+            empty_count = line.count(EMPTY)
 
-                # pattern: A _ _ _ _ B  (A and B are different)
-                if (
-                    segment[0] == A and
-                    segment[5] == B and
-                    all(cell == EMPTY for cell in segment[1:5])
-                ):
-                    # fill pattern A B B A B
-                    old1, old2, old3, old4 = line[i+1], line[i+2], line[i+3], line[i+4]
-                    line[i+1]=B; debug_change("pattern_10", idx if is_row else i+1, (i+1 if is_row else idx), old1, B)
-                    line[i+2]=B; debug_change("pattern_10", idx if is_row else i+2, (i+2 if is_row else idx), old2, B)
-                    line[i+3]=A; debug_change("pattern_10", idx if is_row else i+3, (i+3 if is_row else idx), old3, A)
-                    line[i+4]=B; debug_change("pattern_10", idx if is_row else i+4, (i+4 if is_row else idx), old4, B)
+            if empty_count != B_left:
+                continue
+
+            for i in range(size):
+                if line[i] == EMPTY:
+
+                    # test if B would create triple
+                    left1 = line[i-1] if i-1 >= 0 else None
+                    left2 = line[i-2] if i-2 >= 0 else None
+                    right1 = line[i+1] if i+1 < size else None
+                    right2 = line[i+2] if i+2 < size else None
+
+                    illegal = (
+                        (left1 == B and left2 == B) or
+                        (right1 == B and right2 == B) or
+                        (left1 == B and right1 == B)
+                    )
+
+                    new = A if illegal else B
+
+                    old = line[i]
+                    line[i] = new
+
+                    if is_row:
+                        debug_change("pattern_8", idx, i, old, new)
+                    else:
+                        debug_change("pattern_8", i, idx, old, new)
+
                     changed = True
 
-                # reversed pattern: B _ _ _ _ A
-                elif (
-                    segment[0] == B and
-                    segment[5] == A and
-                    all(cell == EMPTY for cell in segment[1:5])
-                ):
-                    # fill pattern B A A B A
-                    old1, old2, old3, old4 = line[i+1], line[i+2], line[i+3], line[i+4]
-                    line[i+1]=A; debug_change("pattern_10", idx if is_row else i+1, (i+1 if is_row else idx), old1, A)
-                    line[i+2]=A; debug_change("pattern_10", idx if is_row else i+2, (i+2 if is_row else idx), old2, A)
-                    line[i+3]=B; debug_change("pattern_10", idx if is_row else i+3, (i+3 if is_row else idx), old3, B)
-                    line[i+4]=A; debug_change("pattern_10", idx if is_row else i+4, (i+4 if is_row else idx), old4, A)
-                    changed = True
-
-            if changed:
-                if is_row:
-                    board[idx] = line
-                else:
-                    for r in range(size):
-                        board[r][idx] = line[r]
+            if is_row:
+                board[idx] = line
+            else:
+                for r in range(size):
+                    board[r][idx] = line[r]
 
     return changed
