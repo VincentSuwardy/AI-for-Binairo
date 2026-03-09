@@ -1,3 +1,4 @@
+import random
 from Constraint import apply_constraints
 
 EMPTY = -1
@@ -16,6 +17,15 @@ def color_name(value):
 # DEBUG HELPER
 def debug_change(pattern, r, c, old, new):
     print(f"[{pattern}] Row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
+
+# Heuristic func
+def apply_heuristic(board, difficulty):
+    # solve_with_heuristic(board, difficulty)
+    solve_with_limited_heuristic(board, difficulty)
+
+# ======================================================================================================================
+# Heuristic settings
+# ======================================================================================================================
 
 # Fungsi solve buat panggil heuristic
 def solve_with_heuristic(board, difficulty):
@@ -46,7 +56,7 @@ def solve_with_limited_heuristic(board, difficulty, max_attempts=3):
 
         if not changed:
             break  # semua full / tidak ada cell tersisa
-        
+
         board = apply_constraints(board, difficulty)
         counter += 1
 
@@ -55,8 +65,11 @@ def solve_with_limited_heuristic(board, difficulty, max_attempts=3):
 # ======================================================================================================================
 # Try heuristic random fill
 # ======================================================================================================================
-import random
 
+
+# ======================================================================================================================
+# Try heuristic most constrained cell fill
+# ======================================================================================================================
 '''
     1. Selalu pilih cell yang paling “terbatas” dulu, yaitu row atau column dengan jumlah EMPTY paling sedikit
     2. Dari kolom/kumpulan cell kosong itu, pilih cell yang paling terbatas lagi (EMPTY paling sedikit di kolom)
