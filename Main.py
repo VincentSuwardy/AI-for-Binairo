@@ -2,7 +2,7 @@ import sys
 from WebIteractor import WebIteractor, URL
 from Constraint import apply_constraints, fill_random
 from Validator import is_valid
-from Heuristic import random_fill
+from Heuristic import random_fill, fill_most_constrained_cell
 
 '''
     DEFINE PUZZLE CONFIG
@@ -53,77 +53,46 @@ def trim_board(board, real_rows=40, real_cols=30):
     Preprocess using anchor + flip strategy:
     - Pick one anchor cell
     - Try a value
-    - Explore with random fills
-    - If invalid → revert and flip the anchor value
+    - Explore with heuristic
+    - If invalid > revert and flip the anchor value
 '''
-def preprocess_board(board, difficulty, max_steps=1, max_retry=3):
+def preprocess_board(board, difficulty, max_steps=10, max_retry=3):
     import copy
-    import random
 
     for attempt_idx in range(max_retry):
         print(f"[retry] attempt {attempt_idx + 1}")
-        base_board = copy.deepcopy(board)
+        board_copy = copy.deepcopy(board)
 
-        # Step 1: apply constraints first
-        base_board = apply_constraints(base_board, difficulty)
+        # Step 1: initial constraint
+        board_copy = apply_constraints(board_copy, difficulty)
 
-        # Find EMPTY cells
-        size = len(base_board)
-        empty_cells = [
-            (r, c)
-            for r in range(size)
-            for c in range(size)
-            if base_board[r][c] == -1
-        ]
+        # === LOOP FILL ===
+        for step in range(max_steps):
+            print(f"[step] {step + 1}")
 
-        if not empty_cells:
-            print("[retry] no EMPTY left, returning")
-            return base_board
+            # changed = random_fill(board_copy)
+            changed = fill_most_constrained_cell(board_copy)
 
-        # === PICK ANCHOR ===
-        r, c = random.choice(empty_cells)
+            if not changed:
+                print("[info] no EMPTY left")
+                break
 
-        # Try both values: first random, then flipped
-        first_value = random.choice([0, 1])
-        attempts = [first_value, 1 - first_value]
+            board_copy = apply_constraints(board_copy, difficulty)
 
-        for val in attempts:
-            board_copy = copy.deepcopy(base_board)
+            # optional early stop
+            if not is_valid(board_copy):
+                print("[invalid] break early")
+                break
 
-            # Apply anchor
-            board_copy[r][c] = val
+        # === FINAL VALIDATION ===
+        if is_valid(board_copy):
+            print("[validate] SUCCESS")
+            return board_copy
+        else:
+            print("[validate] FAILED > retry")
 
-            # Apply constraint after anchor
-            # board_copy = apply_constraints(board_copy, difficulty)
-            new_board = apply_constraints(board_copy, difficulty)
-
-            if not is_valid(new_board):
-                print("[anchor] invalid, trying next value")
-                continue
-
-            board_copy = new_board
-
-            # === EXPLORE ===
-            for step in range(max_steps):
-                print(f"[explore] step {step + 1}")
-
-                changed = random_fill(board_copy)
-                if not changed:
-                    break
-
-                board_copy = apply_constraints(board_copy, difficulty)
-
-            # === VALIDATE ===
-            if is_valid(board_copy):
-                print("[validate] SUCCESS - board is valid")
-                return board_copy
-            else:
-                print("[validate] FAILED - board is invalid")
-
-    # kalau dua-duanya gagal → retry outer loop
-    print("[fail] returning original board")
-    board = apply_constraints(board, difficulty)
-    return board  # fallback
+    print("[fail] returning constrained original")
+    return apply_constraints(board, difficulty)
 
 '''
     Main program for solving and submitting.
