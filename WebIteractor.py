@@ -27,7 +27,7 @@ URL = {
     },
 }
 
-class WebInteractor:
+class WebIteractor:
     def __init__(self, url, credentials=None):
         self.URL = url
         self._driver = self._driver_setup()

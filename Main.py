@@ -1,13 +1,15 @@
 import sys
-from WebInteractor import WebInteractor, URL
-from Constraint import apply_constraints, fill_random, EMPTY, WHITE, BLACK
+from WebIteractor import WebIteractor, URL
+from Constraint import apply_constraints, fill_random
+from Validator import is_valid
+from Heuristic import random_fill
 
 '''
     DEFINE PUZZLE CONFIG
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "daily"
+PUZZLE_SIZE = "10"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -48,6 +50,82 @@ def trim_board(board, real_rows=40, real_cols=30):
     return trimmed
 
 '''
+    Preprocess using anchor + flip strategy:
+    - Pick one anchor cell
+    - Try a value
+    - Explore with random fills
+    - If invalid → revert and flip the anchor value
+'''
+def preprocess_board(board, difficulty, max_steps=1, max_retry=3):
+    import copy
+    import random
+
+    for attempt_idx in range(max_retry):
+        print(f"[retry] attempt {attempt_idx + 1}")
+        base_board = copy.deepcopy(board)
+
+        # Step 1: apply constraints first
+        base_board = apply_constraints(base_board, difficulty)
+
+        # Find EMPTY cells
+        size = len(base_board)
+        empty_cells = [
+            (r, c)
+            for r in range(size)
+            for c in range(size)
+            if base_board[r][c] == -1
+        ]
+
+        if not empty_cells:
+            print("[retry] no EMPTY left, returning")
+            return base_board
+
+        # === PICK ANCHOR ===
+        r, c = random.choice(empty_cells)
+
+        # Try both values: first random, then flipped
+        first_value = random.choice([0, 1])
+        attempts = [first_value, 1 - first_value]
+
+        for val in attempts:
+            board_copy = copy.deepcopy(base_board)
+
+            # Apply anchor
+            board_copy[r][c] = val
+
+            # Apply constraint after anchor
+            # board_copy = apply_constraints(board_copy, difficulty)
+            new_board = apply_constraints(board_copy, difficulty)
+
+            if not is_valid(new_board):
+                print("[anchor] invalid, trying next value")
+                continue
+
+            board_copy = new_board
+
+            # === EXPLORE ===
+            for step in range(max_steps):
+                print(f"[explore] step {step + 1}")
+
+                changed = random_fill(board_copy)
+                if not changed:
+                    break
+
+                board_copy = apply_constraints(board_copy, difficulty)
+
+            # === VALIDATE ===
+            if is_valid(board_copy):
+                print("[validate] SUCCESS - board is valid")
+                return board_copy
+            else:
+                print("[validate] FAILED - board is invalid")
+
+    # kalau dua-duanya gagal → retry outer loop
+    print("[fail] returning original board")
+    board = apply_constraints(board, difficulty)
+    return board  # fallback
+
+'''
     Main program for solving and submitting.
 
     Steps:
@@ -67,7 +145,7 @@ def main():
         sys.exit("[ERROR] Invalid puzzle difficulty!")
 
     # initialize the web iterator
-    iterator = WebInteractor(URL)
+    iterator = WebIteractor(URL)
 
     # define puzzle config
     size = PUZZLE_SIZE
@@ -97,8 +175,9 @@ def main():
         board = pad_board(board)
 
     # solving stage
-    board = apply_constraints(board, PUZZLE_DIFF)
+    # board = apply_constraints(board, PUZZLE_DIFF)
     # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
+    board = preprocess_board(board, difficulty, 3, 3)
 
     if size == "monthly" :
         board = trim_board(board)

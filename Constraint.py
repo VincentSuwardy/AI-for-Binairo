@@ -450,18 +450,18 @@ def pattern_5(board):
     return changed
 
 
-def pattern_6(board):
-    """
+'''
     Pattern 6: Forced Outside Fill
     If color X has exactly 1 tile left to place in a row/column
     and we detect a segment: X _ _ _ X
     then:
-      - DO NOT fill the inside yet
-      - fill ALL remaining EMPTY cells OUTSIDE the segment with opposite color Y
+        - DO NOT fill the inside yet
+        - fill ALL remaining EMPTY cells OUTSIDE the segment with opposite color Y
 
     This ensures the gap will not accidentally be filled with Y later,
     preventing illegal configuration: X Y Y Y X
-    """
+'''
+def pattern_6(board):
     size = len(board)
     half = size // 2
     changed = False
