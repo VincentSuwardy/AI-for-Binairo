@@ -98,8 +98,8 @@ def main():
         board = pad_board(board)
 
     # solving stage
-    board = apply_constraints(board, PUZZLE_DIFF)
-    # board = apply_heuristic(board, PUZZLE_DIFF)
+    # board = apply_constraints(board, PUZZLE_DIFF)
+    board = apply_heuristic(board, PUZZLE_DIFF)
     # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
 
     if size == "monthly" :

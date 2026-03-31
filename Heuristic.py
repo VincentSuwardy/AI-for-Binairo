@@ -20,8 +20,8 @@ def debug_change(pattern, r, c, old, new):
 
 # Heuristic func
 def apply_heuristic(board, difficulty):
-    # solve_with_heuristic(board, difficulty)
-    solve_with_limited_heuristic(board, difficulty)
+    return solve_with_heuristic(board, difficulty)
+    # return solve_with_limited_heuristic(board, difficulty)
 
 # ======================================================================================================================
 # Heuristic settings
