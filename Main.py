@@ -9,7 +9,7 @@ from Heuristic import random_fill, fill_most_constrained_cell
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "10"
+PUZZLE_SIZE = "20"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -50,49 +50,129 @@ def trim_board(board, real_rows=40, real_cols=30):
     return trimmed
 
 '''
+    debug print cells
+'''
+def debug_count(board, label=""):
+    EMPTY = -1
+    WHITE = 0
+    BLACK = 1
+
+    empty = 0
+    white = 0
+    black = 0
+
+    for row in board:
+        for cell in row:
+            if cell == EMPTY:
+                empty += 1
+            elif cell == WHITE:
+                white += 1
+            elif cell == BLACK:
+                black += 1
+
+    print(f"=================================================================\n[{label}] EMPTY={empty} WHITE={white} BLACK={black}\n=================================================================")
+
+'''
     Preprocess using anchor + flip strategy:
     - Pick one anchor cell
     - Try a value
     - Explore with heuristic
     - If invalid > revert and flip the anchor value
 '''
-def preprocess_board(board, difficulty, max_steps=10, max_retry=3):
+# def preprocess_board(board, difficulty, max_steps=10, max_retry=3):
+#     import copy
+
+#     for attempt_idx in range(max_retry):
+#         print(f"[retry] attempt {attempt_idx + 1}")
+#         board_copy = copy.deepcopy(board)
+
+#         # Step 1: initial constraint
+#         board_copy = apply_constraints(board_copy, difficulty)
+
+#         # === LOOP FILL ===
+#         for step in range(max_steps):
+#             print(f"[step] {step + 1}")
+
+#             # changed = random_fill(board_copy)
+#             changed = fill_most_constrained_cell(board_copy)
+
+#             if not changed:
+#                 print("[info] no EMPTY left")
+#                 break
+
+#             board_copy = apply_constraints(board_copy, difficulty)
+
+#             # optional early stop
+#             if not is_valid(board_copy):
+#                 print("[invalid] break early")
+#                 break
+
+#         # === FINAL VALIDATION ===
+#         if is_valid(board_copy):
+#             print("[validate] SUCCESS")
+#             return board_copy
+#         else:
+#             print("[validate] FAILED > retry")
+
+#     print("[fail] returning constrained original")
+#     return apply_constraints(board, difficulty)
+
+def preprocess_board(board, difficulty):
     import copy
 
-    for attempt_idx in range(max_retry):
-        print(f"[retry] attempt {attempt_idx + 1}")
-        board_copy = copy.deepcopy(board)
+    board_copy = copy.deepcopy(board)
 
-        # Step 1: initial constraint
+    # print initial board stats
+    debug_count(board_copy, "initial")
+
+    # initial constraint
+    board_copy = apply_constraints(board_copy, difficulty)
+    debug_count(board_copy, "after constraint")
+
+    last_valid_board = copy.deepcopy(board_copy)
+
+    step = 0
+
+    while True:
+        step += 1
+        print(f"[step] {step}")
+
+        before_fill = copy.deepcopy(board_copy)
+
+        changed = fill_most_constrained_cell(board_copy)
+
+        if not changed:
+            print("[info] no EMPTY left")
+            return last_valid_board
+
         board_copy = apply_constraints(board_copy, difficulty)
 
-        # === LOOP FILL ===
-        for step in range(max_steps):
-            print(f"[step] {step + 1}")
+        if not is_valid(board_copy):
 
-            # changed = random_fill(board_copy)
-            changed = fill_most_constrained_cell(board_copy)
+            print("[invalid] step produced invalid board")
 
-            if not changed:
-                print("[info] no EMPTY left")
-                break
+            # special rule: flip if failure happens on first move
+            if step == 1:
+                print("[flip] retry first move with flipped value")
 
-            board_copy = apply_constraints(board_copy, difficulty)
+                board_copy = copy.deepcopy(before_fill)
 
-            # optional early stop
-            if not is_valid(board_copy):
-                print("[invalid] break early")
-                break
+                # flip the value manually
+                fill_most_constrained_cell(board_copy)
+                board_copy = apply_constraints(board_copy, difficulty)
 
-        # === FINAL VALIDATION ===
-        if is_valid(board_copy):
-            print("[validate] SUCCESS")
-            return board_copy
-        else:
-            print("[validate] FAILED > retry")
+                if is_valid(board_copy):
+                    last_valid_board = copy.deepcopy(board_copy)
+                    continue
 
-    print("[fail] returning constrained original")
-    return apply_constraints(board, difficulty)
+            break
+
+        last_valid_board = copy.deepcopy(board_copy)
+        debug_count(board_copy, f"step {step}")
+
+    # debug_count(board_copy, f"step {step}")
+    print("[stop] returning last valid board")
+    return last_valid_board
 
 '''
     Main program for solving and submitting.
@@ -146,7 +226,8 @@ def main():
     # solving stage
     # board = apply_constraints(board, PUZZLE_DIFF)
     # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
-    board = preprocess_board(board, difficulty, 3, 3)
+    # board = preprocess_board(board, difficulty, 3, 3)
+    board = preprocess_board(board, difficulty)
 
     if size == "monthly" :
         board = trim_board(board)
