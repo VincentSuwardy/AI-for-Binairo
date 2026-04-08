@@ -9,7 +9,7 @@ from Heuristic import random_fill, fill_most_constrained_cell
     size: 6 | 8 | 10 | 14 | 20 | daily | weekly | monthly
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "10"
+PUZZLE_SIZE = "20"
 PUZZLE_DIFF = "hard"
 
 '''
