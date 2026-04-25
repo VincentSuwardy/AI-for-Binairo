@@ -155,8 +155,8 @@ def preprocess_board(board, difficulty):
 
         before_fill = copy.deepcopy(board_copy)
 
-        # changed, r, c = fill_most_constrained_cell(board_copy)
-        changed, r, c = heuristic_density_fill(board_copy)
+        changed, r, c = fill_most_constrained_cell(board_copy)
+        # changed, r, c = heuristic_density_fill(board_copy)
 
         if not changed:
             # print("[info] no EMPTY left")
@@ -262,10 +262,10 @@ def main():
         board = apply_constraints(board, difficulty)
         debug_count(board, "initial")
     else:
-        # board = apply_constraints(board, difficulty)
+        board = apply_constraints(board, difficulty)
         # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
         # board = preprocess_board(board, difficulty, 3, 3)
-        board = preprocess_board(board, difficulty)
+        # board = preprocess_board(board, difficulty)
         board = run_genetic(board, fixed_mask, PUZZLE_DIFF)
 
     # if size == "monthly" :

@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
 PATH_DATA = "./Data"
-TIMEOUT = 10  # seconds
+TIMEOUT = 20  # seconds
 
 URL = {
     "base_url": "https://www.puzzle-binairo.com/",

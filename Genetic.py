@@ -8,7 +8,7 @@ BLACK = 1
 '''
     Genetic Algorithm hyperparameters
 '''
-POPULATION_SIZE = 200
+POPULATION_SIZE = 350
 MAX_GENERATIONS = 800
 
 MUTATION_RATE = 0.3
@@ -45,7 +45,7 @@ def init_population(base_board, fixed_mask, pop_size):
 
     where wn is weight for every penalty
 '''
-def fitness(board, w1=5, w2=2, w3=10):
+def fitness(board, w1=20, w2=10, w3=1):
     rows = len(board)
     cols = len(board[0])
 
@@ -155,6 +155,7 @@ def crossover(parent1, parent2, fixed_mask):
         return row_based_crossover(parent1, parent2, fixed_mask)
     else:
         return col_based_crossover(parent1, parent2, fixed_mask)
+    # return uniform_crossover(parent1, parent2, fixed_mask)
 
 # row based crossover
 def row_based_crossover(parent1, parent2, fixed_mask):
@@ -194,6 +195,25 @@ def col_based_crossover(parent1, parent2, fixed_mask):
 
     return child
 
+# uniform crossover
+def uniform_crossover(parent1, parent2, fixed_mask):
+    rows = len(parent1)
+    cols = len(parent1[0])
+
+    child = [[-1]*cols for _ in range(rows)]
+
+    for r in range(rows):
+        for c in range(cols):
+            if fixed_mask[r][c]:
+                child[r][c] = parent1[r][c]
+            else:
+                if random.random() < 0.5:
+                    child[r][c] = parent1[r][c]
+                else:
+                    child[r][c] = parent2[r][c]
+
+    return child
+
 
 '''
     Mutation using neighbourhood-based
@@ -201,29 +221,83 @@ def col_based_crossover(parent1, parent2, fixed_mask):
 def mutate(board, fixed_mask):
     conflicts = get_conflict_cells(board)
 
-    if not conflicts:
-        return
+    # ===============================
+    # STEP 1: Triplet-based mutation
+    # ===============================
+    if conflicts:
+        candidates = [(r, c) for (r, c) in conflicts if not fixed_mask[r][c]]
 
-    # filter yang bisa diubah
-    candidates = [(r, c) for (r, c) in conflicts if not fixed_mask[r][c]]
+        if candidates:
+            values = [board[r][c] for (r, c) in candidates]
 
-    if not candidates:
-        return
+            # swap kalau ada 2 warna
+            if len(candidates) >= 2 and (0 in values and 1 in values):
+                (r1, c1), (r2, c2) = random.sample(candidates, 2)
 
-    values = [board[r][c] for (r, c) in candidates]
+                if board[r1][c1] != board[r2][c2]:
+                    board[r1][c1], board[r2][c2] = board[r2][c2], board[r1][c1]
+                    return
 
-    # ===== CASE 1: ada 2 warna → swap =====
-    if len(candidates) >= 2 and (0 in values and 1 in values):
-        (r1, c1), (r2, c2) = random.sample(candidates, 2)
-
-        if board[r1][c1] != board[r2][c2]:
-            board[r1][c1], board[r2][c2] = board[r2][c2], board[r1][c1]
+            # fallback flip dari conflict
+            r, c = random.choice(candidates)
+            board[r][c] = 1 - board[r][c]
             return
 
-    # ===== CASE 2: fallback → flip =====
-    r, c = random.choice(candidates)
-    board[r][c] = 1 - board[r][c]
+    # ===============================
+    # STEP 2: Balance-based mutation
+    # ===============================
+    rows = len(board)
+    cols = len(board[0])
 
+    if random.random() < 0.5:
+        # ROW
+        r = random.randint(0, rows - 1)
+
+        whites = board[r].count(0)
+        blacks = board[r].count(1)
+
+        if whites != blacks:
+            target = 0 if whites > blacks else 1
+
+            candidates = [
+                c for c in range(cols)
+                if board[r][c] == target and not fixed_mask[r][c]
+            ]
+
+            if candidates:
+                c = random.choice(candidates)
+                board[r][c] = 1 - board[r][c]
+                return
+
+    else:
+        # COL
+        c = random.randint(0, cols - 1)
+
+        col_vals = [board[r][c] for r in range(rows)]
+        whites = col_vals.count(0)
+        blacks = col_vals.count(1)
+
+        if whites != blacks:
+            target = 0 if whites > blacks else 1
+
+            candidates = [
+                r for r in range(rows)
+                if board[r][c] == target and not fixed_mask[r][c]
+            ]
+
+            if candidates:
+                r = random.choice(candidates)
+                board[r][c] = 1 - board[r][c]
+                return
+
+    # ===============================
+    # STEP 3: Last fallback (random flip)
+    # ===============================
+    r = random.randint(0, rows - 1)
+    c = random.randint(0, cols - 1)
+
+    if not fixed_mask[r][c]:
+        board[r][c] = 1 - board[r][c]
 
 # get all conflicted cells
 def get_conflict_cells(board):
@@ -270,17 +344,17 @@ def run_genetic(base_board, fixed_mask, difficulty):
         if best_score == 0:
             return best
         
-        new_population.append(copy.deepcopy(best_current))     # elisitm
+        new_population.append(copy.deepcopy(best_current))     # elitism
 
         pairs = selection(population, POPULATION_SIZE-1)
 
         for parent1, parent2 in pairs:
-            if random.random() < CROSSOVER_RATE:
-                child = crossover(parent1, parent2, fixed_mask)
-            else:
-                child = copy.deepcopy(
-                    parent1 if fitness(parent1) > fitness(parent2) else parent2
-                )
+            # if random.random() < CROSSOVER_RATE:
+            child = crossover(parent1, parent2, fixed_mask)
+            # else:
+            #     child = copy.deepcopy(
+            #         parent1 if fitness(parent1) > fitness(parent2) else parent2
+            #     )
 
             if random.random() < MUTATION_RATE:
                 mutate(child, fixed_mask)
