@@ -9,48 +9,50 @@ BLACK = 1
     - No duplicate rows/columns when fully filled
 '''
 def is_valid(board):
-    size = len(board)
-    half = size // 2
+    rows = len(board)
+    cols = len(board[0])
 
     # Check rows
-    for r in range(size):
+    for r in range(rows):
         row = board[r]
+        half = cols // 2
 
         # Rule: color count must not exceed half
         if row.count(WHITE) > half or row.count(BLACK) > half:
             return False
 
         # Rule: no three consecutive identical colors
-        for c in range(size - 2):
+        for c in range(cols - 2):
             if row[c] == row[c+1] == row[c+2] != EMPTY:
                 return False
 
     # Check columns
-    for c in range(size):
-        col = [board[r][c] for r in range(size)]
+    for c in range(cols):
+        col = [board[r][c] for r in range(rows)]
+        half = rows // 2
 
         if col.count(WHITE) > half or col.count(BLACK) > half:
             return False
 
-        for r in range(size - 2):
+        for r in range(rows - 2):
             if col[r] == col[r+1] == col[r+2] != EMPTY:
                 return False
 
     # OPTIONAL: UNIQUENESS CHECK (only for fully filled rows/columns)
 
     # Check unique rows
-    full_rows = [tuple(row) for row in board if EMPTY not in row]
+    full_rows = [tuple(board[r]) for r in range(rows) if EMPTY not in board[r]]
     if len(full_rows) != len(set(full_rows)):
         return False
 
     # Check unique columns
-    cols = []
-    for c in range(size):
-        col = tuple(board[r][c] for r in range(size))
+    full_cols = []
+    for c in range(cols):
+        col = tuple(board[r][c] for r in range(rows))
         if EMPTY not in col:
-            cols.append(col)
+            full_cols.append(col)
 
-    if len(cols) != len(set(cols)):
+    if len(full_cols) != len(set(full_cols)):
         return False
 
     return True
