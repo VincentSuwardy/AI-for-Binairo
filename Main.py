@@ -1,4 +1,5 @@
 import sys
+import time
 from WebIteractor import WebIteractor, URL
 from Constraint import apply_constraints, fill_random
 from Validator import is_valid
@@ -14,7 +15,7 @@ BLACK = 1
     size: 6 | 8 | 10 | 14 | 20 | daily (24x24) | weekly (30x30) | monthly (30x40)
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "weekly"
+PUZZLE_SIZE = "20"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -236,6 +237,7 @@ def main():
 
     # retrieve puzzle from the web
     id, board = iterator.open_puzzle(size, difficulty)
+    start_time = time.time()
 
     # validate if puzzle was successfully retrieved
     if not board:
@@ -262,16 +264,25 @@ def main():
         board = apply_constraints(board, difficulty)
         debug_count(board, "initial")
     else:
-        board = apply_constraints(board, difficulty)
+        # board = apply_constraints(board, difficulty)
         # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
         # board = preprocess_board(board, difficulty, 3, 3)
-        # board = preprocess_board(board, difficulty)
+        board = preprocess_board(board, difficulty)
         board = run_genetic(board, fixed_mask, PUZZLE_DIFF)
 
     # if size == "monthly" :
     #     board = trim_board(board)
 
     answer = Answer(board)
+    
+    end_time = time.time()
+    elapsed = end_time - start_time
+
+    print("\n================ TIME STATS ================")
+    print(f"Total time: {elapsed:.2f} seconds")
+    print(f"Total time: {elapsed/60:.2f} minutes")
+    print("===========================================\n")
+
     iterator.save_answer(id, answer, size, difficulty)  # save the final solved answer to local file
 
     # input the solved answer into the website
