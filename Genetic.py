@@ -51,7 +51,7 @@ def init_population(base_board, fixed_mask, pop_size):
 
         for r in range(len(board)):
             for c in range(len(board[0])):
-                if not fixed_mask[r][c]:
+                if not fixed_mask[r][c] and board[r][c] == EMPTY:
                     board[r][c] = random.choice([WHITE, BLACK])
 
         population.append(board)
@@ -436,7 +436,7 @@ def run_genetic(base_board, fixed_mask, difficulty):
             print(f"[best fitness current] {best_score}")
 
         if best_score == 0:
-            return best
+            return best, best_score
         
         new_population.append(copy.deepcopy(best_current))     # elitism
 
@@ -461,4 +461,4 @@ def run_genetic(base_board, fixed_mask, difficulty):
         population = new_population
 
     print(f"[stop] end of Genetic Algorithm\n")
-    return best
+    return best, best_score

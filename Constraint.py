@@ -96,7 +96,7 @@ def apply_constraints(board, difficulty):
             if pattern(board):
                 changed = True
                 break  # restart from pattern_1
-        changed = True
+        # changed = True
 
 
     return board

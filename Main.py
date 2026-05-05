@@ -4,7 +4,7 @@ from WebIteractor import WebIteractor, URL
 from Constraint import apply_constraints, fill_random
 from Validator import is_valid
 from Heuristic import random_fill, fill_most_constrained_cell, heuristic_density_fill
-from Genetic import run_genetic
+from Genetic import run_genetic, fitness
 
 EMPTY = -1
 WHITE = 0
@@ -78,6 +78,8 @@ def debug_count(board, label=""):
 
     print(f"=================================================================\n[{label}] EMPTY={empty} WHITE={white} BLACK={black}\n=================================================================")
 
+    return empty
+
 '''
     debug print color
 '''
@@ -107,13 +109,16 @@ def preprocess_board(board, difficulty):
 
     # initial constraint
     board_copy = apply_constraints(board_copy, difficulty)
-    debug_count(board_copy, "after constraint")
+    empty_counter = debug_count(board_copy, "after constraint")
 
     last_valid_board = copy.deepcopy(board_copy)
+    if (empty_counter == 0):
+        print("[stop] board is fully filled")
+        return last_valid_board, empty_counter
 
     step = 0
 
-    while True:
+    while True and empty_counter > 0:
         step += 1
         print(f"[step] {step}")
 
@@ -124,7 +129,8 @@ def preprocess_board(board, difficulty):
 
         if not changed:
             # print("[info] no EMPTY left")
-            return last_valid_board
+            empty_counter = debug_count(last_valid_board, "no more moves")
+            return last_valid_board, empty_counter
 
         board_copy = apply_constraints(board_copy, difficulty)
 
@@ -134,7 +140,7 @@ def preprocess_board(board, difficulty):
 
             # special rule: flip if failure happens on first move
             if step == 1:
-                first_value = board[r][c]
+                first_value = board_copy[r][c]
                 print("[flip] retry first move with flipped value")
 
                 board_copy = copy.deepcopy(before_fill)
@@ -154,11 +160,11 @@ def preprocess_board(board, difficulty):
             break
 
         last_valid_board = copy.deepcopy(board_copy)
-        debug_count(board_copy, f"step {step}")
+        empty_counter = debug_count(board_copy, f"step {step}")
 
     # debug_count(board_copy, f"step {step}")
     print("[stop] returning last valid board")
-    return last_valid_board
+    return last_valid_board, empty_counter
 
 
 '''
@@ -223,15 +229,19 @@ def main():
     # original_board = [row[:] for row in board]
 
     # solving stage
-    if (difficulty == "easy"):
-        board = apply_constraints(board, difficulty)
-        debug_count(board, "initial")
-    else:
+    # if (difficulty == "easy"):
+    #     board = apply_constraints(board, difficulty)
+    #     debug_count(board, "initial")
+    # else:
         # board = apply_constraints(board, difficulty)
         # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
         # board = preprocess_board(board, difficulty, 3, 3)
-        board = preprocess_board(board, difficulty)
-        board = run_genetic(board, fixed_mask, PUZZLE_DIFF)
+    
+    board, empty_counter = preprocess_board(board, difficulty)
+    if (empty_counter > 0):
+        board, board_fitness = run_genetic(board, fixed_mask, PUZZLE_DIFF)
+    else:
+        board_fitness = fitness(board)
 
     # if size == "monthly" :
     #     board = trim_board(board)
@@ -241,13 +251,16 @@ def main():
     end_time = time.time()
     elapsed = end_time - start_time
 
+    # debug fitness
+    print(f"\nFinal fitness: {board_fitness:.2f}")
+
     # debug timer
     print("\n================ TIME STATS ================")
     print(f"Total time: {elapsed:.2f} seconds")
     print(f"Total time: {elapsed/60:.2f} minutes")
     print("============================================\n")
 
-    iterator.save_answer(id, answer, size, difficulty)  # save the final solved answer to local file
+    iterator.save_answer(id, answer, size, difficulty, elapsed, board_fitness)  # save the final solved answer to local file
 
     # input the solved answer into the website
     iterator.input_answer(answer)

@@ -258,7 +258,7 @@ class WebIteractor:
         file.writelines(data)
         file.close()
 
-    def save_answer(self, id, answer, size, difficulty=None):
+    def save_answer(self, id, answer, size, difficulty=None, elapsed=None, fitness = None):
         board = answer.state.board
 
         data = [
@@ -271,6 +271,12 @@ class WebIteractor:
             for column in row:
                 strings += str(column) + " "
             data.append(f"{strings}\n")
+
+        if elapsed is not None:
+            data.append(f"Time: {elapsed:.4f} seconds ({elapsed/60:.4f} minutes)\n")
+
+        if fitness is not None:
+            data.append(f"Fitness: {fitness:.4f}\n")
 
         path = f"./Answer/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
 
