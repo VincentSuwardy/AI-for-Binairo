@@ -6,7 +6,7 @@ WHITE = 0
 BLACK = 1
 
 '''
-    Genetic Algorithm hyperparameters
+    Genetic Algorithm hyperparameters in default value
 '''
 POPULATION_SIZE = 350
 MAX_GENERATIONS = 800
@@ -18,7 +18,7 @@ ELITE_SIZE = 2
 '''
     Adaptive Genetic Algorithm parameter
 '''
-def get_ga_params(rows, cols, difficulty="medium"):
+def get_ga_params(rows, cols, difficulty=""):
     size = rows * cols
 
     # base scaling
@@ -33,7 +33,7 @@ def get_ga_params(rows, cols, difficulty="medium"):
         pop_size = int(pop_size * 1.5)
         max_gen = int(max_gen * 1.5)
 
-    # limit so it won't overkill
+    # limit to prevent overkill
     pop_size = min(max(pop_size, 50), 1000)
     max_gen = min(max(max_gen, 100), 2000)
 
@@ -66,7 +66,7 @@ def init_population(base_board, fixed_mask, pop_size):
 
     fitness = -(w1 * penalty_1) + (w2 * penalty_2) + (w3 * penalty_3)
 
-    where wn is weight for every penalty
+    where wN is weight for every penalty
 '''
 def fitness(board, w1=20, w2=10, w3=1):
     rows = len(board)
@@ -133,22 +133,28 @@ def fitness(board, w1=20, w2=10, w3=1):
 
     return -penalty
 
-'''
-    "Auto-Tuning" Fitness Weights using Local Search (Hill Climbing)
-'''
-def cached_fitness(board, cache):
+# Cache fitness to make program run faster
+def cached_fitness(board, w1, w2, w3, cache):
     key = tuple(tuple(row) for row in board)
 
     if key not in cache:
-        # cache[key] = fitness(board, w1, w2, w3)
-        cache[key] = fitness(board)
+        cache[key] = fitness(board, w1, w2, w3)
+        # cache[key] = fitness(board)
 
     return cache[key]
 
+'''
+    "Auto-Tuning" Fitness Weights using Local Search
+'''
 def tune_fitness_weights(sample_board, fixed_mask, iterations=30):
     # initial weights
     current = [20, 10, 1]
 
+    '''
+        - initialize population
+        - count every fitness
+        - return average fitness in population
+    '''
     def evaluate(weights):
         w1, w2, w3 = weights
         pop = init_population(sample_board, fixed_mask, 30)
@@ -158,16 +164,28 @@ def tune_fitness_weights(sample_board, fixed_mask, iterations=30):
 
     best_score = evaluate(current)
 
+    # loop tuning
     for _ in range(iterations):
         candidate = current[:]
 
         # random tweak
         idx = random.randint(0, 2)
+        '''
+            - small step  (-1, +1): for soft fine-tuning
+            - medium step (-2, +2): for larger exploration
+            - big step    (-5, +5): further jump fot escaping local optimum
+
+            these combinations make:
+            - exploration : search new area
+            - exploitation: fixing current solution
+        '''
         change = random.choice([-5, -2, -1, 1, 2, 5])
         candidate[idx] = max(1, candidate[idx] + change)
 
         score = evaluate(candidate)
 
+        # accept better candidates
+        # similar with hill climbing concept
         if score > best_score:
             current = candidate
             best_score = score
@@ -182,10 +200,12 @@ def tune_fitness_weights(sample_board, fixed_mask, iterations=30):
 def selection(population, num_pairs):
     pairs = []
 
+    # count every indiv fitness
     fitness_values = [fitness(idx) for idx in population]
     # total_fit = sum(fitness_values)
 
     for _ in range(num_pairs):
+        # random first parent
         i = random.randint(0, len(population)-1)
         parent1 = population[i]
 
@@ -196,15 +216,17 @@ def selection(population, num_pairs):
             # else:
             #     probs.append(0)
 
-            # attraction by fitness 
+            # attraction by fitness (firefly concept)
             diff = fitness_values[j] - fitness_values[i]
             probs.append(max(diff, 0))
 
+        # select second parent
         if sum(probs) > 0:
             parent2 = random.choices(population, weights=probs, k=1)[0]
         else:
             parent2 = random.choice(population)
 
+        # safe pairs
         pairs.append((parent1, parent2))
     
     return pairs
@@ -286,9 +308,7 @@ def uniform_crossover(parent1, parent2, fixed_mask):
 def mutate(board, fixed_mask):
     conflicts = get_conflict_cells(board)
 
-    # ===============================
-    # STEP 1: Triplet-based mutation
-    # ===============================
+    # Triplet-based mutation
     if conflicts:
         candidates = [(r, c) for (r, c) in conflicts if not fixed_mask[r][c]]
 
@@ -308,14 +328,12 @@ def mutate(board, fixed_mask):
             board[r][c] = 1 - board[r][c]
             return
 
-    # ===============================
-    # STEP 2: Balance-based mutation
-    # ===============================
+    # Balance-based mutation
     rows = len(board)
     cols = len(board[0])
 
     if random.random() < 0.5:
-        # ROW
+        # rows
         r = random.randint(0, rows - 1)
 
         whites = board[r].count(0)
@@ -335,7 +353,7 @@ def mutate(board, fixed_mask):
                 return
 
     else:
-        # COL
+        # columns
         c = random.randint(0, cols - 1)
 
         col_vals = [board[r][c] for r in range(rows)]
@@ -355,9 +373,7 @@ def mutate(board, fixed_mask):
                 board[r][c] = 1 - board[r][c]
                 return
 
-    # ===============================
-    # STEP 3: Last fallback (random flip)
-    # ===============================
+    # Last fallback (random flip)
     r = random.randint(0, rows - 1)
     c = random.randint(0, cols - 1)
 
@@ -400,23 +416,19 @@ def run_genetic(base_board, fixed_mask, difficulty):
     fitness_cache = {}
 
     # tuning weights
-    # w1, w2, w3 = tune_fitness_weights(base_board, fixed_mask)
+    w1, w2, w3 = tune_fitness_weights(base_board, fixed_mask)
 
     for gen in range(MAX_GENERATIONS):
         new_population = []
 
         # elitism
-        # population.sort(
-        #     key=lambda x: fitness(x, w1, w2, w3), 
-        #     reverse=True
-        # )
         population.sort(
-            key=lambda x: cached_fitness(x, fitness_cache),
+            key=lambda x: cached_fitness(x, w1, w2, w3, fitness_cache),
             reverse=True
         )
 
         best_current = population[0]
-        best_current_score = cached_fitness(best_current, fitness_cache)
+        best_current_score = cached_fitness(best_current, w1, w2, w3, fitness_cache)
 
         if best_current_score > best_score:
             best = copy.deepcopy(best_current)
@@ -448,5 +460,5 @@ def run_genetic(base_board, fixed_mask, difficulty):
 
         population = new_population
 
-    print(f"[end of Genetic Algorithm]\n")
+    print(f"[stop] end of Genetic Algorithm\n")
     return best

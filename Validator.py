@@ -38,7 +38,7 @@ def is_valid(board):
             if col[r] == col[r+1] == col[r+2] != EMPTY:
                 return False
 
-    # OPTIONAL: UNIQUENESS CHECK (only for fully filled rows/columns)
+    # (optional): uniqueness check (only for fully filled rows/columns)
 
     # Check unique rows
     full_rows = [tuple(board[r]) for r in range(rows) if EMPTY not in board[r]]

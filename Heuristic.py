@@ -14,8 +14,8 @@ def color_name(value):
         return "EMPTY"
 
 # DEBUG HELPER
-def debug_change(pattern, r, c, old, new):
-    print(f"[{pattern}] Row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
+def debug_change(heuristic, r, c, old, new):
+    print(f"[{heuristic}] Row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
 
 '''
     Fill one random EMPTY cell with a random color (WHITE or BLACK).

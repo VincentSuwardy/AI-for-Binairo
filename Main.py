@@ -15,7 +15,7 @@ BLACK = 1
     size: 6 | 8 | 10 | 14 | 20 | daily (24x24) | weekly (30x30) | monthly (30x40)
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "20"
+PUZZLE_SIZE = "monthly"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -32,28 +32,28 @@ class Answer:
 
 # Method for processing monthly board, since monthly board is a 30 x 40 board.
 '''
-    Expand the board to make it 40 x 40 by padding -1
+    Expand the board to make it 40 x 40 by padding -1 [unused]
 '''
-def pad_board(board, target_rows=40, target_cols=40, pad_value=-1):
-    rows = len(board)
-    cols = len(board[0])
-    new_board = [[pad_value for _ in range(target_cols)] for _ in range(target_rows)]
-    for r in range(rows):
-        for c in range(cols):
-            new_board[r][c] = board[r][c]
-    return new_board
+# def pad_board(board, target_rows=40, target_cols=40, pad_value=-1):
+#     rows = len(board)
+#     cols = len(board[0])
+#     new_board = [[pad_value for _ in range(target_cols)] for _ in range(target_rows)]
+#     for r in range(rows):
+#         for c in range(cols):
+#             new_board[r][c] = board[r][c]
+#     return new_board
 
 '''
-    trim the expanded tiles from the board
+    trim the expanded tiles from the board [unused]
 '''
-def trim_board(board, real_rows=40, real_cols=30):
-    trimmed = []
-    for r in range(real_rows):
-        row = []
-        for c in range(real_cols):
-            row.append(board[r][c])
-        trimmed.append(row)
-    return trimmed
+# def trim_board(board, real_rows=40, real_cols=30):
+#     trimmed = []
+#     for r in range(real_rows):
+#         row = []
+#         for c in range(real_cols):
+#             row.append(board[r][c])
+#         trimmed.append(row)
+#     return trimmed
 
 '''
     debug print cells
@@ -94,46 +94,9 @@ def color_name(value):
     - Pick one most constrained cell
     - Try a value
     - Explore with heuristic
-    - If invalid > revert and flip the anchor value
+    - If invalid in first move > revert and flip the anchor value
+    - Do while heuristic result is still valid
 '''
-# def preprocess_board(board, difficulty, max_steps=10, max_retry=3):
-#     import copy
-
-#     for attempt_idx in range(max_retry):
-#         print(f"[retry] attempt {attempt_idx + 1}")
-#         board_copy = copy.deepcopy(board)
-
-#         # Step 1: initial constraint
-#         board_copy = apply_constraints(board_copy, difficulty)
-
-#         # === LOOP FILL ===
-#         for step in range(max_steps):
-#             print(f"[step] {step + 1}")
-
-#             # changed = random_fill(board_copy)
-#             changed = fill_most_constrained_cell(board_copy)
-
-#             if not changed:
-#                 print("[info] no EMPTY left")
-#                 break
-
-#             board_copy = apply_constraints(board_copy, difficulty)
-
-#             # optional early stop
-#             if not is_valid(board_copy):
-#                 print("[invalid] break early")
-#                 break
-
-#         # === FINAL VALIDATION ===
-#         if is_valid(board_copy):
-#             print("[validate] SUCCESS")
-#             return board_copy
-#         else:
-#             print("[validate] FAILED > retry")
-
-#     print("[fail] returning constrained original")
-#     return apply_constraints(board, difficulty)
-
 def preprocess_board(board, difficulty):
     import copy
 
@@ -209,14 +172,14 @@ def create_fixed_mask(board):
     Main program for solving and submitting.
 
     Steps:
-        1. Initialize the web interactor.
-        2. Retrieve a puzzle from the web.
-        3. Apply constraint-based rules solving rules.
-        4. Apply all constraint patterns.
-        5. Apply heuristic to make search tree smaller.
-        5. Apply genetic algorithm based on selected reference(s).
-        6. Save both the puzzle and its solution locally.
-        7. Input the solution back into the website.
+        1. Initialize the web interactor
+        2. Retrieve a puzzle from the web
+        3. Apply constraint-based rules solving rules
+        4. Apply all constraint patterns
+        5. Apply heuristic to make search tree smaller
+        5. Apply genetic algorithm
+        6. Save both the puzzle and its solution locally
+        7. Input the solution back into the website
 '''
 def main():
     # error handler
@@ -278,10 +241,11 @@ def main():
     end_time = time.time()
     elapsed = end_time - start_time
 
+    # debug timer
     print("\n================ TIME STATS ================")
     print(f"Total time: {elapsed:.2f} seconds")
     print(f"Total time: {elapsed/60:.2f} minutes")
-    print("===========================================\n")
+    print("============================================\n")
 
     iterator.save_answer(id, answer, size, difficulty)  # save the final solved answer to local file
 

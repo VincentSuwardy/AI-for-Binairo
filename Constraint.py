@@ -13,7 +13,7 @@ def color_name(value):
     
 # DEBUG HELPER
 def debug_change(pattern, r, c, old, new):
-    print(f"[{pattern}] Row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
+    print(f"[{pattern}] row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
 
 # GUARD
 def can_assign(board, r, c, value):
@@ -68,27 +68,6 @@ def safe_assign(board, r, c, value, pattern):
     @param board: 2D list of integers (-1 = empty, 0 = white, 1 = black)
     @return: Updated board after applying all possible rules
 '''
-# def apply_constraints(board, difficulty):
-#     changed = True
-
-#     while changed:
-#         changed = False
-
-#         # apply rules
-#         changed |= pattern_1(board)
-#         changed |= pattern_2a(board)
-#         changed |= pattern_2b(board)
-
-#         if difficulty in ["hard", None]:
-#             changed |= pattern_3(board)
-#             changed |= pattern_4(board)
-#             changed |= pattern_5(board)
-#             changed |= pattern_6(board)
-#             changed |= pattern_7(board)
-#             changed |= pattern_8(board)
-
-#     return board
-
 def apply_constraints(board, difficulty):
     patterns = [pattern_1, pattern_2a, pattern_2b, pattern_3]
 
@@ -100,10 +79,25 @@ def apply_constraints(board, difficulty):
     while changed:
         changed = False
 
+        # apply rules
+        # changed |= pattern_1(board)
+        # changed |= pattern_2a(board)
+        # changed |= pattern_2b(board)
+
+        # if difficulty in ["hard", None]:
+        #     changed |= pattern_3(board)
+        #     changed |= pattern_4(board)
+        #     changed |= pattern_5(board)
+        #     changed |= pattern_6(board)
+        #     changed |= pattern_7(board)
+        #     changed |= pattern_8(board)
+
         for pattern in patterns:
             if pattern(board):
                 changed = True
                 break  # restart from pattern_1
+        changed = True
+
 
     return board
 
