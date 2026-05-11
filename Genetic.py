@@ -12,7 +12,7 @@ POPULATION_SIZE = 350
 MAX_GENERATIONS = 800
 
 MUTATION_RATE = 0.3
-CROSSOVER_RATE = 0.8
+CROSSOVER_RATE = 0.95
 ELITE_SIZE = 2
 
 '''
@@ -173,7 +173,7 @@ def tune_fitness_weights(sample_board, fixed_mask, iterations=30):
         '''
             - small step  (-1, +1): for soft fine-tuning
             - medium step (-2, +2): for larger exploration
-            - big step    (-5, +5): further jump fot escaping local optimum
+            - big step    (-5, +5): further jump for escaping local optimum
 
             these combinations make:
             - exploration : search new area
@@ -443,14 +443,14 @@ def run_genetic(base_board, fixed_mask, difficulty):
         pairs = selection(population, POPULATION_SIZE-1)
 
         for parent1, parent2 in pairs:
-            # if random.random() < CROSSOVER_RATE:
-            child = crossover(parent1, parent2, fixed_mask)
-            # else:
-            #     child = copy.deepcopy(
-            #         parent1 if fitness(parent1) > fitness(parent2) else parent2
-            #     )
+            if random.uniform(0.0, 1.0) < CROSSOVER_RATE:
+                child = crossover(parent1, parent2, fixed_mask)
+            else:
+                child = copy.deepcopy(
+                    parent1 if fitness(parent1) > fitness(parent2) else parent2
+                )
 
-            if random.random() < MUTATION_RATE:
+            if random.uniform(0.0, 1.0) <= MUTATION_RATE:
                 mutate(child, fixed_mask)
 
             new_population.append(child)

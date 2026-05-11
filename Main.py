@@ -15,7 +15,7 @@ BLACK = 1
     size: 6 | 8 | 10 | 14 | 20 | daily (24x24) | weekly (30x30) | monthly (30x40)
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "monthly"
+PUZZLE_SIZE = "daily"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -200,7 +200,7 @@ def main():
     # define puzzle config
     size = PUZZLE_SIZE
     if PUZZLE_SIZE in ["daily", "weekly", "monthly"]:
-        difficulty = None
+        difficulty = "hard"
     else:
         difficulty = PUZZLE_DIFF
 
@@ -233,15 +233,15 @@ def main():
     #     board = apply_constraints(board, difficulty)
     #     debug_count(board, "initial")
     # else:
-        # board = apply_constraints(board, difficulty)
+    board = apply_constraints(board, difficulty)
         # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
         # board = preprocess_board(board, difficulty, 3, 3)
     
-    board, empty_counter = preprocess_board(board, difficulty)
-    if (empty_counter > 0):
-        board, board_fitness = run_genetic(board, fixed_mask, PUZZLE_DIFF)
-    else:
-        board_fitness = fitness(board)
+    # board, empty_counter = preprocess_board(board, difficulty)
+    # if (empty_counter > 0):
+    #     board, board_fitness = run_genetic(board, fixed_mask, PUZZLE_DIFF)
+    # else:
+    board_fitness = fitness(board)
 
     # if size == "monthly" :
     #     board = trim_board(board)
