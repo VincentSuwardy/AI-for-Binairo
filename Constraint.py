@@ -15,51 +15,119 @@ def color_name(value):
 def debug_change(pattern, r, c, old, new):
     print(f"[{pattern}] row {r} col {c} changed {color_name(old)} -> {color_name(new)}")
 
+from copy import deepcopy
+
 # GUARD
 def can_assign(board, r, c, value):
+
     rows = len(board)
     cols = len(board[0])
 
     if board[r][c] != EMPTY:
         return False
 
-    row = board[r]
-    col = [board[i][c] for i in range(rows)]
-
     row_half = cols // 2
     col_half = rows // 2
 
-    # limit jumlah
-    if value == BLACK:
-        if row.count(BLACK) >= row_half or col.count(BLACK) >= col_half:
-            return False
-    else:
-        if row.count(WHITE) >= row_half or col.count(WHITE) >= col_half:
+    # =========================
+    # SIMULATE ASSIGN
+    # =========================
+
+    temp_board = deepcopy(board)
+    temp_board[r][c] = value
+
+    # =========================
+    # CHECK ROWS
+    # =========================
+
+    for rr in range(rows):
+
+        row = temp_board[rr]
+
+        black = row.count(BLACK)
+        white = row.count(WHITE)
+
+        # ---- max limit
+        if black > row_half or white > row_half:
             return False
 
-    # no triple row
-    temp = row[:]
-    temp[c] = value
-    for i in range(cols - 2):
-        if temp[i] == temp[i+1] == temp[i+2] != EMPTY:
+        # ---- no triple
+        for i in range(cols - 2):
+            if row[i] == row[i+1] == row[i+2] != EMPTY:
+                return False
+
+    # =========================
+    # CHECK COLS
+    # =========================
+
+    for cc in range(cols):
+
+        col = [temp_board[i][cc] for i in range(rows)]
+
+        black = col.count(BLACK)
+        white = col.count(WHITE)
+
+        # ---- max limit
+        if black > col_half or white > col_half:
             return False
 
-    # no triple col
-    temp = col[:]
-    temp[r] = value
-    for i in range(rows - 2):
-        if temp[i] == temp[i+1] == temp[i+2] != EMPTY:
+        # ---- no triple
+        for i in range(rows - 2):
+            if col[i] == col[i+1] == col[i+2] != EMPTY:
+                return False
+
+    # =========================
+    # DUPLICATE ROW CHECK
+    # (ONLY FULL ROWS)
+    # =========================
+
+    completed_rows = []
+
+    for rr in range(rows):
+
+        row = temp_board[rr]
+
+        if EMPTY in row:
+            continue
+
+        if row in completed_rows:
             return False
+
+        completed_rows.append(row[:])
+
+    # =========================
+    # DUPLICATE COL CHECK
+    # (ONLY FULL COLS)
+    # =========================
+
+    completed_cols = []
+
+    for cc in range(cols):
+
+        col = [temp_board[i][cc] for i in range(rows)]
+
+        if EMPTY in col:
+            continue
+
+        if col in completed_cols:
+            return False
+
+        completed_cols.append(col[:])
 
     return True
 
 
 def safe_assign(board, r, c, value, pattern):
+
     if can_assign(board, r, c, value):
+
         old = board[r][c]
         board[r][c] = value
+
         debug_change(pattern, r, c, old, value)
+
         return True
+
     return False
 
 # PATTERNS
@@ -68,11 +136,22 @@ def safe_assign(board, r, c, value, pattern):
     @param board: 2D list of integers (-1 = empty, 0 = white, 1 = black)
     @return: Updated board after applying all possible rules
 '''
-def apply_constraints(board, difficulty):
-    patterns = [pattern_1, pattern_2a, pattern_2b, pattern_3]
+def apply_constraints(board, difficulty="hard"):
+    patterns = [
+                pattern_1, 
+                pattern_2a, 
+                pattern_2b, 
+                pattern_3
+               ]
 
     if difficulty in ["hard", None]:
-        patterns += [pattern_4, pattern_5, pattern_6, pattern_7, pattern_8]
+        patterns += [
+                     pattern_4, 
+                     pattern_5, 
+                     pattern_6, 
+                     pattern_7, 
+                     pattern_8
+                    ]
 
     changed = True
 
@@ -249,25 +328,34 @@ def pattern_3(board):
     cols = len(board[0])
     changed = False
 
-    # check rows
+    # =========================
+    # CHECK ROWS
+    # =========================
+
     for r in range(rows):
+
         row = board[r]
-        if EMPTY not in row:
-            continue    # skip full row
 
-        half = cols // 2
-        count_white = row.count(WHITE)
-        count_black = row.count(BLACK)
+        # ONLY if exactly 2 EMPTY
+        if row.count(EMPTY) != 2:
+            continue
 
-        # find all fully filled rows
         for ref_r in range(rows):
-            ref_row = board[ref_r]
-            if EMPTY in ref_row:
-                continue    # only compare with full row
 
-            # check if all non-empty cell in this row is identically with ref_row
+            if ref_r == r:
+                continue
+
+            ref_row = board[ref_r]
+
+            # reference must be FULL
+            if EMPTY in ref_row:
+                continue
+
+            # check if all FILLED cells match
             identical = True
+
             for c in range(cols):
+
                 if row[c] != EMPTY and row[c] != ref_row[c]:
                     identical = False
                     break
@@ -275,38 +363,49 @@ def pattern_3(board):
             if not identical:
                 continue
 
-            # check color count
-            target_color = None
-            if count_white == half - 1:
-                target_color = WHITE
-            elif count_black == half - 1:
-                target_color = BLACK
-
-            if target_color is None:
-                continue  # no color with only 1 piece left
-
-            # fill all empty cell in position with opposite color in ref_row
+            # fill EMPTY with opposite
             for c in range(cols):
-                if row[c] == EMPTY and ref_row[c] == (BLACK if target_color == WHITE else WHITE):
-                    changed |= safe_assign(board, r, c, target_color, "pattern_3")
 
-    # check columns
+                if row[c] == EMPTY:
+
+                    val = WHITE if ref_row[c] == BLACK else BLACK
+
+                    changed |= safe_assign(
+                        board,
+                        r,
+                        c,
+                        val,
+                        "pattern_3"
+                    )
+
+    # =========================
+    # CHECK COLUMNS
+    # =========================
+
     for c in range(cols):
+
         col = [board[r][c] for r in range(rows)]
-        if EMPTY not in col:
+
+        # ONLY if exactly 2 EMPTY
+        if col.count(EMPTY) != 2:
             continue
 
-        half = rows // 2
-        count_white = col.count(WHITE)
-        count_black = col.count(BLACK)
-
         for ref_c in range(cols):
-            ref_col = [board[r][ref_c] for r in range(rows)]
-            if EMPTY in ref_col or ref_c == c:
+
+            if ref_c == c:
                 continue
 
+            ref_col = [board[r][ref_c] for r in range(rows)]
+
+            # reference must be FULL
+            if EMPTY in ref_col:
+                continue
+
+            # check if all FILLED cells match
             identical = True
+
             for r in range(rows):
+
                 if board[r][c] != EMPTY and board[r][c] != ref_col[r]:
                     identical = False
                     break
@@ -314,19 +413,14 @@ def pattern_3(board):
             if not identical:
                 continue
 
-            target_color = None
-            if count_white == half - 1:
-                target_color = WHITE
-            elif count_black == half - 1:
-                target_color = BLACK
-
-            if target_color is None:
-                continue
-
+            # fill EMPTY with opposite
             for r in range(rows):
-                if board[r][c] == EMPTY and ref_col[r] == (BLACK if target_color == WHITE else WHITE):
-                    changed |= safe_assign(board, r, c, target_color, "pattern_3")
 
+                if board[r][c] == EMPTY:
+
+                    val = WHITE if ref_col[r] == BLACK else BLACK
+
+                    changed |= safe_assign(board, r, c, val, "pattern_3")
 
     return changed
 

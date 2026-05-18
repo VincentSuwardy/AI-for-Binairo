@@ -3,7 +3,7 @@ import time
 from WebIteractor import WebIteractor, URL
 from Constraint import apply_constraints, fill_random
 from Validator import is_valid
-from Heuristic import random_fill, fill_most_constrained_cell, heuristic_density_fill
+from Heuristic import random_fill, fill_most_constrained_cell, heuristic_density_fill, heuristic_line_fill
 from Genetic import run_genetic, fitness
 
 EMPTY = -1
@@ -15,7 +15,7 @@ BLACK = 1
     size: 6 | 8 | 10 | 14 | 20 | daily (24x24) | weekly (30x30) | monthly (30x40)
     diff: easy | hard | None (for daily/weekly/monthly)
 '''
-PUZZLE_SIZE = "daily"
+PUZZLE_SIZE = "monthly"
 PUZZLE_DIFF = "hard"
 
 '''
@@ -120,12 +120,13 @@ def preprocess_board(board, difficulty):
 
     while True and empty_counter > 0:
         step += 1
-        print(f"[step] {step}")
+        # print(f"[step] {step}")
 
         before_fill = copy.deepcopy(board_copy)
 
-        changed, r, c = fill_most_constrained_cell(board_copy)
+        # changed, r, c = fill_most_constrained_cell(board_copy)
         # changed, r, c = heuristic_density_fill(board_copy)
+        changed, r, c = heuristic_line_fill(board_copy)
 
         if not changed:
             # print("[info] no EMPTY left")
@@ -233,14 +234,16 @@ def main():
     #     board = apply_constraints(board, difficulty)
     #     debug_count(board, "initial")
     # else:
-    board = apply_constraints(board, difficulty)
+        # board = apply_constraints(board, difficulty)
+        # debug_count(board, "initial")
         # board = fill_random(board)    # (optionally) randomly fill remaining empty cells
         # board = preprocess_board(board, difficulty, 3, 3)
     
-    # board, empty_counter = preprocess_board(board, difficulty)
+    board, empty_counter = preprocess_board(board, difficulty)
     # if (empty_counter > 0):
     #     board, board_fitness = run_genetic(board, fixed_mask, PUZZLE_DIFF)
     # else:
+    #     board_fitness = fitness(board)
     board_fitness = fitness(board)
 
     # if size == "monthly" :

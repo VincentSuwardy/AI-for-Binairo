@@ -158,3 +158,178 @@ def heuristic_density_fill(board, threshold=0.8, max_attempts=100):
 
     # if there is no candidate
     return False, None, None
+
+def opposite(color):
+    return BLACK if color == WHITE else WHITE
+
+
+'''
+    Validate one line (row/column)
+
+    Rules:
+    1. no 3 consecutive same colors
+    2. color count must not exceed half
+'''
+def validate_line(line):
+    size = len(line)
+    limit = size // 2
+
+    # balance check
+    if line.count(WHITE) > limit:
+        return False
+
+    if line.count(BLACK) > limit:
+        return False
+
+    # no triple color
+    for i in range(size - 2):
+        a, b, c = line[i], line[i + 1], line[i + 2]
+
+        if a != EMPTY and a == b == c:
+            return False
+
+    return True
+
+
+'''
+    Recursively generate all valid completions for one line.
+
+    Example:
+    [W, W, EMPTY]
+
+    only valid result:
+    [W, W, B]
+
+    because WWW is forbidden.
+'''
+def generate_line_possibilities(line):
+    results = []
+    size = len(line)
+
+    def backtrack(index, current):
+
+        # pruning
+        if not validate_line(current):
+            return
+
+        # finish
+        if index == size:
+            if EMPTY not in current:
+                results.append(current[:])
+            return
+
+        # fixed value
+        if line[index] != EMPTY:
+            current[index] = line[index]
+            backtrack(index + 1, current)
+            return
+
+        # try WHITE / BLACK
+        for color in [WHITE, BLACK]:
+            current[index] = color
+            backtrack(index + 1, current)
+
+        current[index] = EMPTY
+
+    backtrack(0, line[:])
+
+    return results
+
+
+'''
+    Select row/column with medium EMPTY count.
+
+    Avoid:
+    - too few EMPTY -> not much information
+    - too many EMPTY -> search space too large
+'''
+def collect_candidate_lines(board, min_empty=2, max_empty=6):
+    rows = len(board)
+    cols = len(board[0])
+
+    candidates = []
+
+    # rows
+    for r in range(rows):
+        empty_count = board[r].count(EMPTY)
+
+        if min_empty <= empty_count <= max_empty:
+            candidates.append(("row", r, empty_count))
+
+    # columns
+    for c in range(cols):
+        column = [board[r][c] for r in range(rows)]
+
+        empty_count = column.count(EMPTY)
+
+        if min_empty <= empty_count <= max_empty:
+            candidates.append(("col", c, empty_count))
+
+    # prioritize more constrained lines
+    candidates.sort(key=lambda x: x[2])
+
+    return candidates
+
+
+'''
+    Main heuristic:
+    1. choose candidate row/column
+    2. generate all valid possibilities
+    3. find forced cells
+    4. fill guaranteed value
+'''
+def heuristic_line_fill(board, min_empty=2, max_empty=10):
+
+    rows = len(board)
+    cols = len(board[0])
+
+    candidates = collect_candidate_lines(
+        board,
+        min_empty,
+        max_empty
+    )
+
+    if not candidates:
+        return False, None, None
+
+    for line_type, index, _ in candidates:
+
+        # get line
+        if line_type == "row":
+            line = board[index][:]
+
+        else:
+            line = [board[r][index] for r in range(rows)]
+
+        # generate valid fillings
+        possibilities = generate_line_possibilities(line)
+
+        if not possibilities:
+            continue
+
+        # check every EMPTY position
+        for i in range(len(line)):
+
+            if line[i] != EMPTY:
+                continue
+
+            values = set(p[i] for p in possibilities)
+
+            # forced move
+            if len(values) == 1:
+
+                value = values.pop()
+
+                if line_type == "row":
+                    old = board[index][i]
+                    board[index][i] = value
+                    debug_change("heuristic_line_fill", i, index, old, value)
+                    return True, index, i
+
+                else:
+                    old = board[i][index]
+                    board[i][index] = value
+                    debug_change("heuristic_line_fill", i, index, old, value)
+                    return True, i, index
+
+    return False, None, None
