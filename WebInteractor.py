@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
 PATH_DATA = "./Data"
-TIMEOUT = 10  # seconds
+TIMEOUT = 20  # seconds
 
 URL = {
     "base_url": "https://www.puzzle-binairo.com/",
@@ -36,6 +36,7 @@ class WebInteractor:
         # Accept and close privacy preference window
         # self._wait(By.XPATH, "/html/body/div[1]/div/div/div/div[2]/div/button[2]", TIMEOUT).click()
     
+    
     '''
         Driver setup for Chrome 
     '''
@@ -45,6 +46,7 @@ class WebInteractor:
     #     options.add_experimental_option("detach", True)
     #     driver = webdriver.Chrome(service=service, options=options)
     #     return driver
+
 
     '''
         Driver setup for Microsoft Edge
@@ -83,18 +85,18 @@ class WebInteractor:
 
         self._wait(By.ID, "user-cert", TIMEOUT)
 
+
     ''' 
         Wait until an element is visible on the page, then retrieve that element.
     '''
-
     def _wait(self, locator, value, timeout):
         return WebDriverWait(self._driver, timeout).until(EC.visibility_of_element_located((locator, value)))
+
 
     '''
         Scrape puzzles with the specified size, difficulty and ID.
         For puzzles larger than 20 in size, the IDs need to be specified since they cannot be accessed randomly. 
     '''
-
     def scrape_puzzle(self, size, difficulty=None, amount=None, ids=None):
         # If IDs are specified or puzzles larger than 20 in size
         if ids is not None:
@@ -115,6 +117,7 @@ class WebInteractor:
                     scraped += 1
         self.close()
 
+
     '''
         This method opens a puzzle with the specified size, difficulty and ID.
         For puzzles larger than size 20, there are no choices for the difficulty. Therefore, the difficulty should not be specified. 
@@ -129,7 +132,7 @@ class WebInteractor:
 
     def open_puzzle(self, size, difficulty=None, id=None):
 
-        # Open puzzle #
+        # Open puzzle 
         url = self.URL["base_url"]
 
         # Specific puzzles larger than 20 in size
@@ -179,7 +182,7 @@ class WebInteractor:
         #         else:
         #             return None, None
 
-        # Get puzzle ID #
+        # Get puzzle ID 
         if str(size).isnumeric():
             id = self._wait(By.ID, "puzzleID", TIMEOUT).text
         else:
@@ -241,37 +244,98 @@ class WebInteractor:
 
     def save_puzzle(self, id, board, size, difficulty=None):
         data = [
-            f"{id}\n",
-            f"{size} {difficulty if difficulty is not None else ''}\n"
+            # f"{id}\n",
+            # f"{size} {difficulty if difficulty is not None else ''}\n"
         ]
+
+        # =========================================
+        # HEADER
+        # =========================================
+
+        data.append(f"ID\t\t: {id}\n")
+        data.append(f"Size\t: {size}\n")
+        data.append(f"Diff\t: {difficulty}\n\n")
+
+        # =========================================
+        # BOARD
+        # =========================================
         for row in board:
             strings = ""
             for column in row:
-                strings += str(column) + " "
+                if(column==-1):
+                    strings += str(column) + " "
+                else:
+                    strings += " " + str(column) + " "
             data.append(f"{strings}\n")
         path = f"{PATH_DATA}/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
         
-        # Ensure the folder is there
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        # =========================================
+        # SAVE FILE
+        # =========================================
+        os.makedirs(os.path.dirname(path), exist_ok=True)   # Ensure the folder is there
         
         file = open(path, "w")
         file.writelines(data)
         file.close()
 
-    def save_answer(self, id, answer, size, difficulty=None):
+    def save_answer(self, id, answer, size, difficulty=None, elapsed=None, fitness=None, ga_params=None, weights=None):
         board = answer.state.board
 
         data = [
-            f"{id}\n",
-            f"{size} {difficulty if difficulty is not None else ''}\n"
-        ]
-        
+            # f"{id}\n",
+            # f"{size} {difficulty if difficulty is not None else ''}\n"
+            ]
+
+        # HEADER
+        data.append(f"ID\t\t: {id}\n")
+        data.append(f"Size\t: {size}\n")
+        data.append(f"Diff\t: {difficulty}\n")
+
+        # PARAMETERS
+        if ga_params is not None:
+            data.append("\n---- Parameter ----\n")
+
+            data.append(f"Population size\t: {ga_params['population_size']}\n")
+            data.append(f"Max generations\t: {ga_params['max_generations']}\n")
+            data.append(f"Mutation rate\t: {ga_params['mutation_rate']}\n")
+            data.append(f"Crossover rate\t: {ga_params['crossover_rate']}\n")
+            data.append(f"Elite size\t\t: {ga_params['elite_size']}\n")
+
+        # WEIGHTS
+        if weights is not None:
+            w1, w2, w3 = weights
+
+            data.append("\n")
+
+            data.append(f"Weight w1\t: {w1}\n")
+            data.append(f"Weight w2\t: {w2}\n")
+            data.append(f"Weight w3\t: {w3}\n")
+
+        else:
+            data.append("\n")
+            data.append(f"No weight used. Solved without GA\n")
+
+        # RESULT
+        data.append("\n---- Result ----\n")
         for row in board:
             strings = ""
             for column in row:
-                strings += str(column) + " "
+                if(column==-1):
+                    strings += str(column) + " "
+                else:
+                    strings += " " + str(column) + " "
             data.append(f"{strings}\n")
 
+        # FINAL STATS
+        data.append("\n")
+
+        if elapsed is not None:
+            data.append(f"Time\t: {elapsed:.4f} seconds ({elapsed/60:.4f} minutes)\n")
+
+        if fitness is not None:
+            data.append(f"Fitness\t: {fitness:.4f}\n")
+
+        # SAVE FILE
         path = f"./Answer/{size}{difficulty if difficulty is not None else ''}/{id}.txt"
 
         # Ensure the folder is there
@@ -281,6 +345,7 @@ class WebInteractor:
         file.writelines(data)
         file.close()
 
+
     '''
         Simulate mouse clicks on a specific puzzle cell.
         Selenium's ActionChains to move the mouse pointer to the target cell element on the web page.
@@ -288,13 +353,13 @@ class WebInteractor:
         @params cell: WebElement representing the target cell.
         @params clicks: number of times to click the cell (default = 1).
     '''
-
     def click_cell(self, cell, clicks=1):
         actions = ActionChains(self._driver)
         actions.move_to_element(cell)
         for _ in range(clicks):
             actions.click()
         actions.perform()
+
 
     '''
         Input the solved puzzle answer into the web interface.
@@ -306,7 +371,6 @@ class WebInteractor:
 
         @params answer: 2-dimensional array of integer
     '''
-
     def input_answer(self, answer):
         flat_answer = [val for row in answer.state.board for val in row]
 
@@ -343,10 +407,10 @@ class WebInteractor:
             elif val == -1: # EMPTY
                 continue
 
+
     '''
         @return answer: 2-dimensional array of integer
     '''
-
     # def get_answer(self, size, id, difficulty=None):
     #     self.open_puzzle(size, difficulty, id)
     #     self._wait(By.ID, "btnGiveUp", TIMEOUT).click()
